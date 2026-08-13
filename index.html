@@ -1,246 +1,655 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Инвентаризация пресс-форм</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-    <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f3f4f6; }
-        #reader { width: 100%; }
-        #reader video { border-radius: 12px; border: 2px solid #3b82f6; }
-        .hidden { display: none !important; }
-        .scan-line { animation: scan 2s infinite linear; }
-        @keyframes scan { 0% { transform: translateY(0); } 50% { transform: translateY(100px); } 100% { transform: translateY(0); } }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1d4ed8">
+<title>Инвентаризация пресс-форм</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<style>
+  html,body{overscroll-behavior:none;}
+  body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;}
+  #reader{width:100%;}
+  #reader video{border-radius:16px;}
+  #reader__scan_region video{border-radius:16px;}
+  .no-scrollbar::-webkit-scrollbar{display:none}
+  .no-scrollbar{scrollbar-width:none}
+  .laser{animation:laser 1.5s ease-in-out infinite}
+  @keyframes laser{0%,100%{top:10%}50%{top:86%}}
+  .fade-up{animation:fadeUp .22s ease-out}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  .pulse-btn{animation:pulseBtn 2s infinite}
+  @keyframes pulseBtn{0%{box-shadow:0 0 0 0 rgba(34,197,94,.55)}70%{box-shadow:0 0 0 20px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+  .tab-active{color:#2563eb;border-color:#2563eb;background:#eff6ff;}
+</style>
 </head>
-<body class="text-gray-800 min-h-screen flex flex-col">
+<body class="bg-gray-100 text-gray-800 min-h-screen">
 
-    <header class="bg-blue-600 text-white p-4 shadow-md sticky top-0 z-10">
-        <h1 class="text-xl font-bold text-center">📦 Инвентаризация</h1>
-        <div class="text-center text-xs mt-1 opacity-90" id="stats">База не загружена</div>
-    </header>
+<!-- ШАПКА -->
+<header class="bg-blue-700 text-white px-4 py-3 shadow sticky top-0 z-30">
+  <div class="max-w-lg mx-auto flex items-center justify-between">
+    <div>
+      <h1 class="font-bold text-lg leading-tight">📦 Инвентаризация пресс-форм</h1>
+      <div class="text-[11px] opacity-80" id="srcLabel">Загрузка…</div>
+    </div>
+    <div class="text-right">
+      <div class="font-bold text-sm" id="hdrStats">—</div>
+      <button onclick="exportData()" class="text-[11px] bg-white/20 hover:bg-white/30 rounded px-2 py-0.5 mt-0.5">💾 Экспорт</button>
+    </div>
+  </div>
+</header>
 
-    <main class="flex-grow p-4 max-w-lg mx-auto w-full pb-24">
-        
-        <!-- Блок загрузки файла -->
-        <div id="step1" class="bg-white p-4 rounded-xl shadow mb-4 border border-gray-200">
-            <h2 class="font-bold mb-2 flex items-center"><span class="mr-2">📁</span> Шаг 1: Загрузить базу</h2>
-            <p class="text-sm text-gray-600 mb-3">Выберите Excel файл с вашего устройства.</p>
-            <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" class="block w-full text-sm text-gray-500
-                file:mr-4 file:py-2 file:px-4
-                file:rounded-full file:border-0
-                file:text-sm file:font-semibold
-                file:bg-blue-50 file:text-blue-700
-                hover:file:bg-blue-100 cursor-pointer"/>
-        </div>
+<main class="max-w-lg mx-auto p-4 pb-28">
 
-        <!-- Блок сканера -->
-        <div id="step2" class="bg-white p-4 rounded-xl shadow mb-4 border border-gray-200 hidden">
-            <div class="flex justify-between items-center mb-3">
-                <h2 class="font-bold flex items-center"><span class="mr-2">📷</span> Шаг 2: Сканирование</h2>
-                <button id="toggleScanBtn" onclick="toggleScanner()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow">Запустить камеру</button>
-            </div>
-            <div id="reader" class="mb-2 relative"></div>
-            <p class="text-xs text-gray-500 text-center mt-2">Наведите камеру на штрихкод</p>
-        </div>
+  <!-- ======== ВКЛАДКА: СКАНИРОВАНИЕ ======== -->
+  <section id="view-scan">
 
-        <!-- Информация о найденной форме -->
-        <div id="itemInfo" class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-xl shadow-lg mb-4 hidden animate-fade-in">
-            <h3 class="font-bold text-lg mb-2 text-gray-800" id="itemName">-</h3>
-            <div class="space-y-1 text-sm mb-4 bg-white p-2 rounded border border-yellow-200">
-                <p><strong>📍 Место:</strong> <span id="itemLocation" class="text-blue-600 font-bold"></span></p>
-                <p><strong>🏷️ Код:</strong> <span id="itemCode"></span></p>
-                <p><strong>⚙️ Статус:</strong> <span id="itemStatus"></span></p>
-                <p class="pt-2 border-t mt-2 text-gray-600 italic" id="itemNotes"></p>
-            </div>
-            
-            <div class="space-y-2">
-                <button onclick="markChecked('Инвентаризация пройдена')" class="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-bold shadow-md active:scale-95 transition">✅ Форма на месте</button>
-                <div class="flex gap-2">
-                    <input type="text" id="customNote" placeholder="Другое примечание (например: повреждена)" class="flex-grow border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                    <button onclick="addCustomNote()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 rounded-lg font-bold shadow active:scale-95 transition">✏️</button>
-                </div>
-                <button onclick="closeItemInfo()" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 rounded-lg text-sm mt-2">Отмена / Закрыть</button>
-            </div>
-        </div>
+    <!-- Баннер восстановленной сессии -->
+    <div id="restoreBanner" class="hidden bg-amber-50 border border-amber-300 rounded-xl p-3 mb-4 text-sm fade-up">
+      💾 <b>Восстановлена прошлая сессия</b> (автосохранение).
+      <div class="flex gap-2 mt-2">
+        <button onclick="dismissBanner()" class="bg-amber-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold">Продолжить</button>
+        <button onclick="resetAll()" class="bg-white border border-amber-400 px-3 py-1.5 rounded-lg text-xs">Начать заново</button>
+      </div>
+    </div>
 
-        <!-- Сообщение об ошибке (не найдено) -->
-        <div id="notFoundInfo" class="bg-red-50 border-l-4 border-red-500 p-4 rounded-xl shadow-lg mb-4 hidden">
-            <h3 class="font-bold text-red-700 mb-2">⚠️ Штрихкод не найден в базе</h3>
-            <p class="text-sm mb-3 font-mono bg-white p-2 rounded border border-red-200" id="notFoundBarcode"></p>
-            <button onclick="closeNotFound()" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 rounded-lg text-sm">Пропустить и сканировать дальше</button>
-        </div>
+    <!-- Прогресс -->
+    <div class="bg-white rounded-2xl shadow p-4 mb-4">
+      <div class="flex justify-between text-sm mb-1.5">
+        <span class="text-gray-500">Проверено</span>
+        <span class="font-bold"><span id="statDone">0</span> / <span id="statTotal">0</span></span>
+      </div>
+      <div class="h-2.5 bg-gray-200 rounded-full overflow-hidden">
+        <div id="progressBar" class="h-full bg-green-500 rounded-full transition-all" style="width:0%"></div>
+      </div>
+    </div>
 
-    </main>
+    <!-- ГЛАВНАЯ КНОПКА -->
+    <button onclick="openScanner()" id="bigScanBtn"
+      class="pulse-btn w-full bg-green-600 hover:bg-green-700 active:scale-95 transition text-white rounded-2xl py-6 text-xl font-bold shadow-lg mb-2">
+      📷 Сканировать код
+    </button>
+    <p class="text-[11px] text-gray-500 text-center mb-4">
+      Долго целиться не нужно — просто наведите камеру, чтобы этикетка попала в рамку
+    </p>
 
-    <!-- Кнопка экспорта (всегда внизу) -->
-    <footer class="p-4 bg-white border-t shadow-xl fixed bottom-0 left-0 right-0 z-20">
-        <button onclick="exportData()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold shadow-lg active:scale-95 transition flex items-center justify-center gap-2">
-            <span>💾</span> Скачать обновленный Excel
-        </button>
-    </footer>
+    <!-- Управление базой -->
+    <div class="bg-white rounded-2xl shadow p-4 mb-4">
+      <div class="text-xs font-bold text-gray-400 uppercase mb-2">База данных</div>
+      <div class="flex flex-col gap-2">
+        <button onclick="fileInput.click()" class="w-full bg-gray-100 hover:bg-gray-200 rounded-lg py-2.5 text-sm font-medium">📁 Загрузить файл с телефона (.xlsx)</button>
+        <button onclick="loadFromServer()" class="w-full bg-gray-100 hover:bg-gray-200 rounded-lg py-2.5 text-sm font-medium">🔄 Скачать актуальную с сервера</button>
+        <button onclick="resetMarks()" class="w-full bg-gray-100 hover:bg-gray-200 rounded-lg py-2.5 text-sm font-medium text-red-600">🗑 Сбросить отметки сессии</button>
+      </div>
+      <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" class="hidden">
+    </div>
 
-    <script>
-        let inventoryData = [];
-        let html5QrcodeScanner = null;
-        let isScanning = false;
-        let currentItemIndex = -1;
-        let lastScannedCode = "";
-        let lastScanTime = 0;
-        let sessionScans = 0;
+    <!-- Не найденные -->
+    <div id="nfBlock" class="hidden bg-red-50 border border-red-200 rounded-2xl p-4 mb-4">
+      <div class="text-xs font-bold text-red-400 uppercase mb-1">⚠️ Не найдены в базе: <span id="nfCount">0</span></div>
+      <div id="nfList" class="text-xs font-mono text-red-700 space-y-0.5 max-h-24 overflow-y-auto"></div>
+    </div>
 
-        // Загрузка файла
-        document.getElementById('fileInput').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, {type: 'array'});
-                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                    inventoryData = XLSX.utils.sheet_to_json(firstSheet, {defval: ""});
-                    
-                    if (inventoryData.length > 0) {
-                        document.getElementById('step2').classList.remove('hidden');
-                        updateStats();
-                        // Скрываем блок загрузки для экономии места
-                        document.getElementById('step1').classList.add('hidden'); 
-                    } else {
-                        alert("Файл пуст или имеет неверный формат.");
-                    }
-                } catch (err) {
-                    alert("Ошибка чтения файла: " + err.message);
-                }
-            };
-            reader.readAsArrayBuffer(file);
-        });
+    <!-- Последние проверки -->
+    <div class="bg-white rounded-2xl shadow p-4">
+      <div class="text-xs font-bold text-gray-400 uppercase mb-2">Недавно проверено</div>
+      <div id="recentList" class="space-y-2 text-sm">
+        <div class="text-gray-400 text-xs">Пока ничего не отсканировано</div>
+      </div>
+    </div>
+  </section>
 
-        // Сканер
-        function toggleScanner() {
-            const btn = document.getElementById('toggleScanBtn');
-            if (!isScanning) {
-                if (!html5QrcodeScanner) html5QrcodeScanner = new Html5Qrcode("reader");
-                html5QrcodeScanner.start(
-                    { facingMode: "environment" },
-                    { fps: 10, qrbox: { width: 250, height: 150 } },
-                    (decodedText) => {
-                        const now = Date.now();
-                        if (decodedText === lastScannedCode && now - lastScanTime < 3000) return;
-                        lastScannedCode = decodedText;
-                        lastScanTime = now;
-                        
-                        html5QrcodeScanner.pause();
-                        handleScan(decodedText);
-                    },
-                    (errorMessage) => {}
-                ).then(() => {
-                    isScanning = true;
-                    btn.textContent = "Остановить камеру";
-                    btn.classList.replace('bg-green-500', 'bg-red-500');
-                }).catch((err) => alert("Ошибка доступа к камере. Проверьте разрешения браузера."));
-            } else {
-                html5QrcodeScanner.stop().then(() => {
-                    isScanning = false;
-                    btn.textContent = "Запустить камеру";
-                    btn.classList.replace('bg-red-500', 'bg-green-500');
-                });
-            }
-        }
+  <!-- ======== ВКЛАДКА: БАЗА ======== -->
+  <section id="view-db" class="hidden">
+    <div class="relative mb-3">
+      <input id="searchInput" type="search" placeholder="🔍 Поиск: штрихкод, название, код, место…"
+        class="w-full bg-white border border-gray-300 rounded-xl p-3 text-sm shadow-sm focus:ring-2 focus:ring-blue-500 outline-none">
+    </div>
+    <div id="filterChips" class="flex gap-2 overflow-x-auto no-scrollbar mb-3 pb-1">
+      <button data-f="all" class="chip whitespace-nowrap">Все</button>
+      <button data-f="scanned" class="chip whitespace-nowrap">✅ Проверено</button>
+      <button data-f="notscanned" class="chip whitespace-nowrap">Не проверено</button>
+      <button data-f="В работе" class="chip whitespace-nowrap">В работе</button>
+      <button data-f="В ремонте" class="chip whitespace-nowrap">В ремонте</button>
+      <button data-f="Списана" class="chip whitespace-nowrap">Списана</button>
+      <button data-f="other" class="chip whitespace-nowrap">Прочее</button>
+    </div>
+    <div class="text-xs text-gray-500 mb-2" id="dbCount"></div>
+    <div id="dbList" class="space-y-2"></div>
+    <button id="moreBtn" onclick="dbShown+=150;renderDb()" class="hidden w-full mt-3 bg-white border border-gray-300 rounded-xl py-2.5 text-sm font-medium">Показать ещё</button>
+  </section>
 
-        function resumeScanner() {
-            if (html5QrcodeScanner && isScanning) html5QrcodeScanner.resume();
-        }
+  <!-- ======== КАРТОЧКА ОБЪЕКТА ======== -->
+  <section id="view-card" class="hidden fade-up">
+    <button onclick="closeCard()" class="mb-3 text-sm font-medium text-blue-700">← Назад</button>
 
-        function handleScan(barcode) {
-            barcode = String(barcode).trim();
-            // Ищем совпадения (поддерживаем разные названия колонок)
-            const itemIndex = inventoryData.findIndex(row => {
-                const rowBarcode = String(row.barcode || row['Штрихкод'] || row['Barcode'] || '').trim();
-                return rowBarcode === barcode;
-            });
+    <div class="bg-white rounded-2xl shadow p-4 mb-4">
+      <div id="cardScannedBadge" class="hidden bg-green-100 text-green-700 text-xs font-bold rounded-lg px-2 py-1 mb-2 inline-block"></div>
+      <h2 id="cName" class="text-lg font-bold leading-snug"></h2>
+      <div class="mt-3 space-y-2 text-sm">
+        <div class="flex justify-between gap-2"><span class="text-gray-400">Штрихкод</span><span id="cBarcode" class="font-mono font-bold"></span></div>
+        <div class="flex justify-between gap-2"><span class="text-gray-400">Код формы</span><span id="cCode" class="font-medium"></span></div>
+        <div class="flex justify-between gap-2"><span class="text-gray-400">Место хранения</span><span id="cLocation" class="font-bold text-blue-700"></span></div>
+        <div class="flex justify-between gap-2 items-center"><span class="text-gray-400">Статус</span><span id="cStatus"></span></div>
+        <div class="pt-2 border-t"><span class="text-gray-400 text-xs">Примечание</span><div id="cNotes" class="text-gray-700 mt-0.5"></div></div>
+      </div>
+    </div>
 
-            if (itemIndex !== -1) {
-                currentItemIndex = itemIndex;
-                showItemInfo(inventoryData[itemIndex], barcode);
-            } else {
-                showNotFound(barcode);
-            }
-        }
+    <!-- Действия -->
+    <div id="cardActions">
+      <button onclick="markItem('Инвентаризация пройдена')" class="w-full bg-green-600 hover:bg-green-700 active:scale-95 transition text-white py-4 rounded-xl text-lg font-bold shadow mb-4">✅ Форма на месте</button>
+      <div class="text-xs font-bold text-gray-400 uppercase mb-2">Если есть несоответствие:</div>
+      <div class="flex flex-wrap gap-2 mb-3">
+        <button onclick="markItem('Повреждена')" class="bg-orange-100 text-orange-700 px-3 py-2 rounded-lg text-sm font-medium">⚠️ Повреждена</button>
+        <button onclick="markItem('Не соответствует месту')" class="bg-orange-100 text-orange-700 px-3 py-2 rounded-lg text-sm font-medium">📍 Не на своём месте</button>
+        <button onclick="markItem('Этикетка не читается')" class="bg-orange-100 text-orange-700 px-3 py-2 rounded-lg text-sm font-medium">🏷 Этикетка не читается</button>
+        <button onclick="markItem('Требуется ремонт')" class="bg-orange-100 text-orange-700 px-3 py-2 rounded-lg text-sm font-medium">🔧 Требуется ремонт</button>
+      </div>
+      <div class="flex gap-2">
+        <input id="customNote" type="text" placeholder="Своё примечание…" class="flex-grow bg-white border border-gray-300 rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+        <button onclick="markCustom()" class="bg-blue-600 text-white px-4 rounded-xl font-bold">OK</button>
+      </div>
+    </div>
 
-        function getVal(item, keys) {
-            for(let k of keys) if(item[k] !== undefined && item[k] !== "") return item[k];
-            return "-";
-        }
+    <!-- После отметки -->
+    <div id="cardMarked" class="hidden">
+      <div class="bg-green-50 border border-green-300 rounded-xl p-3 text-sm text-green-800 mb-3" id="markedInfo"></div>
+      <button onclick="scanNext()" class="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-xl text-lg font-bold shadow mb-2">📷 Сканировать следующий</button>
+      <button onclick="closeCard()" class="w-full bg-gray-200 hover:bg-gray-300 py-2.5 rounded-xl text-sm">Готово</button>
+    </div>
+  </section>
 
-        function showItemInfo(item, barcode) {
-            document.getElementById('itemInfo').classList.remove('hidden');
-            document.getElementById('notFoundInfo').classList.add('hidden');
-            
-            document.getElementById('itemName').textContent = getVal(item, ['product_name', 'НазваниеФормы', 'Название']);
-            document.getElementById('itemLocation').textContent = getVal(item, ['storage_location', 'МестоХранения', 'Место']);
-            document.getElementById('itemStatus').textContent = getVal(item, ['status', 'ПоследнийСтатус', 'Статус']);
-            document.getElementById('itemCode').textContent = getVal(item, ['КодФормы', 'code', 'Код']);
-            document.getElementById('itemNotes').textContent = "Примечание: " + getVal(item, ['notes', 'Примечание', 'Примечания']);
-            document.getElementById('customNote').value = "";
-        }
+  <!-- ======== НЕ НАЙДЕНО ======== -->
+  <section id="view-notfound" class="hidden fade-up">
+    <div class="bg-red-50 border-l-4 border-red-500 rounded-2xl p-4 mb-4">
+      <h3 class="font-bold text-red-700 mb-1">⚠️ Штрихкод не найден в базе</h3>
+      <div id="nfCode" class="font-mono text-lg font-bold my-2 bg-white rounded-lg p-2 border border-red-200"></div>
+      <p class="text-xs text-gray-600">Код записан в список «не найденные» — он попадёт в итоговый файл экспорта (отдельный лист).</p>
+    </div>
+    <button onclick="scanNext()" class="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-xl text-lg font-bold shadow mb-2">📷 Сканировать следующий</button>
+    <button onclick="showView('scan')" class="w-full bg-gray-200 hover:bg-gray-300 py-2.5 rounded-xl text-sm">Готово</button>
+  </section>
 
-        function showNotFound(barcode) {
-            document.getElementById('notFoundInfo').classList.remove('hidden');
-            document.getElementById('itemInfo').classList.add('hidden');
-            document.getElementById('notFoundBarcode').textContent = barcode;
-        }
+</main>
 
-        function closeItemInfo() {
-            document.getElementById('itemInfo').classList.add('hidden');
-            currentItemIndex = -1;
-            resumeScanner();
-        }
+<!-- НИЖНЯЯ НАВИГАЦИЯ -->
+<nav class="fixed bottom-0 left-0 right-0 bg-white border-t shadow-2xl z-30">
+  <div class="max-w-lg mx-auto grid grid-cols-2">
+    <button id="navScan" onclick="showView('scan')" class="py-3 text-sm font-bold border-t-2 border-transparent text-gray-500">📷 Сканирование</button>
+    <button id="navDb" onclick="showView('db')" class="py-3 text-sm font-bold border-t-2 border-transparent text-gray-500">📋 База</button>
+  </div>
+</nav>
 
-        function closeNotFound() {
-            document.getElementById('notFoundInfo').classList.add('hidden');
-            resumeScanner();
-        }
+<!-- ОВЕРЛЕЙ СКАНЕРА -->
+<div id="overlay" class="fixed inset-0 z-50 bg-black hidden flex-col">
+  <div class="flex items-center justify-between p-3 text-white">
+    <button onclick="closeScanner()" class="bg-white/15 hover:bg-white/25 rounded-lg px-3 py-2 text-sm font-bold">✕ Закрыть</button>
+    <div class="text-xs opacity-80">Наведите камеру на этикетку</div>
+    <button id="torchBtn" onclick="toggleTorch()" class="bg-white/15 hover:bg-white/25 rounded-lg px-3 py-2 text-sm">🔦</button>
+  </div>
+  <div class="flex-1 flex items-center justify-center px-3 overflow-hidden">
+    <div class="relative w-full max-w-xl">
+      <div id="reader"></div>
+      <div class="absolute inset-0 pointer-events-none">
+        <div class="absolute left-2 right-2 border-2 border-green-400/80 rounded-xl" style="top:15%;bottom:15%"></div>
+        <div class="laser absolute left-4 right-4 h-0.5 bg-green-400 shadow-[0_0_8px_2px_rgba(74,222,128,0.8)]"></div>
+      </div>
+    </div>
+  </div>
+  <div class="p-4 text-center">
+    <div id="scanStatus" class="text-green-400 text-sm mb-3 h-5 font-medium"></div>
+    <button onclick="closeScanner()" class="w-full max-w-xs bg-white/15 text-white py-3 rounded-xl font-bold">Отмена</button>
+  </div>
+</div>
 
-        function markChecked(noteText) {
-            if (currentItemIndex === -1) return;
-            const timestamp = new Date().toLocaleString('ru-RU');
-            const finalNote = `${noteText} | ${timestamp}`;
-            
-            // Определяем колонку для примечаний
-            const noteKey = Object.keys(inventoryData[currentItemIndex]).find(k => 
-                k.toLowerCase().includes('note') || k.toLowerCase().includes('примеч')) || 'notes';
-            
-            const existing = inventoryData[currentItemIndex][noteKey];
-            inventoryData[currentItemIndex][noteKey] = existing ? `${existing} -> ${finalNote}` : finalNote;
-            
-            sessionScans++;
-            updateStats();
-            closeItemInfo();
-        }
+<!-- ТОСТ -->
+<div id="toast" class="fixed top-16 left-1/2 -translate-x-1/2 z-[60] hidden px-4 py-2.5 rounded-xl text-sm font-bold shadow-lg"></div>
 
-        function addCustomNote() {
-            const customText = document.getElementById('customNote').value.trim();
-            if (!customText) { alert("Введите текст примечания"); return; }
-            markChecked(customText);
-        }
+<script>
+/* ================== ДАННЫЕ ================== */
+const LS_KEY = 'inventoryApp_v3';
+let inventoryData = [];
+let sessionLog = [];      // [{i, t, note}]
+let notFoundLog = [];     // [{code, t}]
+let html5Qr = null;
+let handling = false;
+let torchOn = false;
+let currentIndex = -1;
+let cardReturnTab = 'scan';
+let dbFilter = 'all';
+let dbShown = 150;
 
-        function updateStats() {
-            const total = inventoryData.length;
-            document.getElementById('stats').textContent = `В базе: ${total} | Проверено за сессию: ${sessionScans}`;
-        }
+const $ = id => document.getElementById(id);
 
-        function exportData() {
-            if (inventoryData.length === 0) { alert("Нет данных для экспорта."); return; }
-            const ws = XLSX.utils.json_to_sheet(inventoryData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Инвентаризация");
-            const today = new Date().toISOString().slice(0,10);
-            XLSX.writeFile(wb, `Результаты_инвентаризации_${today}.xlsx`);
-        }
-    </script>
+function getBarcode(r){ return String(r.barcode ?? r['Штрихкод'] ?? '').trim(); }
+function esc(s){ return String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+/* ================== СТАРТ ================== */
+window.addEventListener('DOMContentLoaded', () => {
+  styleChips();
+  $('fileInput').addEventListener('change', onManualFile);
+  $('searchInput').addEventListener('input', () => { clearTimeout(st); dbShown = 150; var st = setTimeout(renderDb, 120); });
+  document.querySelectorAll('#filterChips .chip').forEach(c => c.onclick = () => { dbFilter = c.dataset.f; dbShown = 150; styleChips(); renderDb(); });
+  tryRestore();
+});
+
+function tryRestore(){
+  try {
+    const saved = JSON.parse(localStorage.getItem(LS_KEY));
+    if (saved && Array.isArray(saved.data) && saved.data.length) {
+      inventoryData = saved.data;
+      sessionLog = saved.log || [];
+      notFoundLog = saved.nf || [];
+      setSource('💾 Автосохранение (сессия восстановлена)');
+      $('restoreBanner').classList.remove('hidden');
+      afterDataReady();
+      return;
+    }
+  } catch(e){}
+  loadFromServer();
+}
+
+function dismissBanner(){ $('restoreBanner').classList.add('hidden'); }
+
+/* ================== ЗАГРУЗКА БАЗЫ ================== */
+async function loadFromServer(){
+  setSource('⏳ Загрузка с сервера…');
+  try {
+    const res = await fetch('inventory.xlsx?t=' + Date.now());
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    processWorkbook(await res.arrayBuffer(), '🌐 Файл с сервера: inventory.xlsx');
+  } catch(e) {
+    setSource('⚠️ Файл inventory.xlsx не найден рядом со страницей');
+    toast('Файл не найден на сервере. Загрузите его с телефона кнопкой ниже.', 'error');
+  }
+}
+
+function onManualFile(e){
+  const file = e.target.files[0];
+  if (!file) return;
+  const done = inventoryData.filter(r => r._scanned).length;
+  if (done > 0 && !confirm(`В базе уже есть ${done} отметок. Загрузка нового файла их сбросит. Продолжить?`)) { e.target.value=''; return; }
+  const reader = new FileReader();
+  reader.onload = ev => { try { processWorkbook(ev.target.result, '📱 Файл с телефона: ' + file.name); } catch(err){ toast('Ошибка чтения: ' + err.message, 'error'); } };
+  reader.readAsArrayBuffer(file);
+  e.target.value = '';
+}
+
+function processWorkbook(buf, sourceLabel){
+  const wb = XLSX.read(new Uint8Array(buf), {type:'array'});
+  let rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {defval:'', raw:false});
+  // убираем повторяющиеся строки-заголовки из склеенных таблиц
+  rows = rows.filter(r => {
+    const b = getBarcode(r).toLowerCase();
+    return b && b !== 'barcode' && b !== 'штрихкод';
+  });
+  rows.forEach(r => {
+    if (r.notes === undefined && r['Примечание'] !== undefined) { r.notes = r['Примечание']; delete r['Примечание']; }
+    r._baseNote = String(r.notes || '');
+    r['Дата проверки'] = '';
+  });
+  inventoryData = rows;
+  sessionLog = [];
+  notFoundLog = [];
+  setSource(sourceLabel + ` · позиций: ${rows.length}`);
+  persist();
+  afterDataReady();
+  toast('База загружена: ' + rows.length + ' позиций', 'success');
+}
+
+function afterDataReady(){
+  updateStats();
+  renderRecent();
+  renderNF();
+}
+
+function setSource(t){ $('srcLabel').textContent = t; }
+
+function persist(){
+  try { localStorage.setItem(LS_KEY, JSON.stringify({data: inventoryData, log: sessionLog, nf: notFoundLog})); } catch(e){}
+}
+
+/* ================== НАВИГАЦИЯ ================== */
+function showView(v){
+  ['scan','db','card','notfound'].forEach(x => $('view-'+x).classList.toggle('hidden', x !== v));
+  $('navScan').classList.toggle('tab-active', v==='scan');
+  $('navDb').classList.toggle('tab-active', v==='db');
+  if (v === 'db') renderDb();
+  window.scrollTo(0,0);
+}
+
+/* ================== СКАНЕР ================== */
+function openScanner(){
+  if (!inventoryData.length) { toast('Сначала загрузите базу данных', 'error'); return; }
+  const ov = $('overlay');
+  ov.classList.remove('hidden'); ov.classList.add('flex');
+  $('scanStatus').textContent = 'Запуск камеры…';
+  torchOn = false; $('torchBtn').classList.remove('bg-yellow-400');
+  setTimeout(startCamera, 80); // дать оверлею отрисоваться
+}
+
+function startCamera(){
+  if (!html5Qr) {
+    html5Qr = new Html5Qrcode('reader', {
+      // только нужные форматы = быстрее распознавание
+      formatsToSupport: [
+        Html5QrcodeSupportedFormats.EAN_13,
+        Html5QrcodeSupportedFormats.EAN_8,
+        Html5QrcodeSupportedFormats.UPC_A,
+        Html5QrcodeSupportedFormats.UPC_E,
+        Html5QrcodeSupportedFormats.CODE_128,
+        Html5QrcodeSupportedFormats.CODE_39,
+        Html5QrcodeSupportedFormats.CODE_93,
+        Html5QrcodeSupportedFormats.ITF,
+        Html5QrcodeSupportedFormats.DATA_MATRIX,
+        Html5QrcodeSupportedFormats.QR_CODE
+      ],
+      experimentalFeatures: { useBarCodeDetectorIfSupported: true }, // нативный быстрый движок
+      rememberLastUsedCamera: true
+    });
+  }
+  const config = {
+    fps: 12,
+    disableFlip: true,
+    // широкая зона наведения под горизонтальные штрихкоды
+    qrbox: (w, h) => {
+      const width = Math.floor(Math.min(w, 640) * 0.9);
+      return { width, height: Math.floor(width * 0.42) };
+    },
+    videoConstraints: {
+      facingMode: { ideal: 'environment' },
+      width: { ideal: 1920 }, height: { ideal: 1080 }
+    }
+  };
+  html5Qr.start({ facingMode: 'environment' }, config, onScanSuccess, () => {})
+    .then(() => { $('scanStatus').textContent = 'Ищу штрихкод…'; })
+    .catch(err => {
+      $('scanStatus').textContent = '';
+      toast('Камера недоступна. Разрешите доступ в настройках браузера.', 'error');
+      closeScanner();
+    });
+}
+
+function stopCamera(){
+  if (html5Qr) {
+    try { return html5Qr.stop().then(() => html5Qr.clear()).catch(()=>{}); } catch(e){}
+  }
+  return Promise.resolve();
+}
+
+function closeScanner(){
+  handling = false;
+  stopCamera();
+  $('overlay').classList.add('hidden');
+  $('overlay').classList.remove('flex');
+}
+
+async function toggleTorch(){
+  try {
+    const video = document.querySelector('#reader video');
+    const track = video && video.srcObject && video.srcObject.getVideoTracks()[0];
+    if (!track) return;
+    torchOn = !torchOn;
+    await track.applyConstraints({ advanced: [{ torch: torchOn }] });
+    $('torchBtn').classList.toggle('bg-yellow-400', torchOn);
+  } catch(e) { toast('Фонарик не поддерживается на этом устройстве', 'error'); torchOn = false; }
+}
+
+function onScanSuccess(text){
+  if (handling) return;
+  handling = true;
+  beep(); if (navigator.vibrate) navigator.vibrate(180);
+  const code = String(text).trim();
+  $('scanStatus').textContent = '✅ Считано: ' + code;
+  const idx = inventoryData.findIndex(r => getBarcode(r) === code);
+  setTimeout(() => {
+    stopCamera().then(() => {
+      $('overlay').classList.add('hidden');
+      $('overlay').classList.remove('flex');
+      handling = false;
+      if (idx >= 0) openCard(idx, true);
+      else showNotFound(code);
+    });
+  }, 350);
+}
+
+/* ================== КАРТОЧКА ================== */
+function openCard(i, fromScan){
+  currentIndex = i;
+  cardReturnTab = fromScan ? 'scan' : 'db';
+  const r = inventoryData[i];
+  $('cName').textContent = r.product_name || '(без названия)';
+  $('cBarcode').textContent = getBarcode(r);
+  $('cCode').textContent = r['КодФормы'] || '—';
+  $('cLocation').textContent = r.storage_location || '—';
+  $('cStatus').innerHTML = statusBadge(r.status);
+  $('cNotes').textContent = r.notes || '—';
+  $('customNote').value = '';
+
+  const badge = $('cardScannedBadge');
+  if (r._scanned) { badge.textContent = '✅ Проверено в этой сессии: ' + r._scannedAt; badge.classList.remove('hidden'); }
+  else badge.classList.add('hidden');
+
+  $('cardActions').classList.remove('hidden');
+  $('cardMarked').classList.add('hidden');
+  showView('card');
+}
+
+function closeCard(){ showView(cardReturnTab); }
+
+function markCustom(){
+  const t = $('customNote').value.trim();
+  if (!t) { toast('Введите текст примечания', 'error'); return; }
+  markItem(t);
+}
+
+function markItem(noteText){
+  if (currentIndex < 0) return;
+  const r = inventoryData[currentIndex];
+  const now = new Date();
+  const ts = now.toLocaleDateString('ru-RU') + ' ' + now.toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'});
+  r.notes = (r._baseNote ? r._baseNote + ' → ' : '') + noteText;
+  r['Дата проверки'] = ts;
+  r._scanned = true;
+  r._scannedAt = ts;
+  sessionLog.unshift({ i: currentIndex, t: ts, note: noteText });
+  if (sessionLog.length > 300) sessionLog.pop();
+  persist();
+  updateStats();
+  renderRecent();
+
+  $('cardActions').classList.add('hidden');
+  $('cardMarked').classList.remove('hidden');
+  $('markedInfo').innerHTML = '💾 Сохранено: <b>' + esc(noteText) + '</b><br><span class="text-xs opacity-70">' + ts + '</span>';
+  const badge = $('cardScannedBadge');
+  badge.textContent = '✅ Проверено: ' + ts;
+  badge.classList.remove('hidden');
+  $('cNotes').textContent = r.notes;
+  toast('Отметка сохранена', 'success');
+}
+
+function scanNext(){
+  showView('scan');
+  openScanner();
+}
+
+/* ================== НЕ НАЙДЕНО ================== */
+function showNotFound(code){
+  if (!notFoundLog.some(x => x.code === code)) {
+    const now = new Date();
+    notFoundLog.push({ code, t: now.toLocaleString('ru-RU') });
+    persist();
+  }
+  $('nfCode').textContent = code;
+  renderNF();
+  showView('notfound');
+}
+
+function renderNF(){
+  const block = $('nfBlock');
+  if (!notFoundLog.length) { block.classList.add('hidden'); return; }
+  block.classList.remove('hidden');
+  $('nfCount').textContent = notFoundLog.length;
+  $('nfList').innerHTML = notFoundLog.map(x => `<div>${esc(x.code)} <span class="opacity-60">· ${esc(x.t)}</span></div>`).join('');
+}
+
+/* ================== ВКЛАДКА "БАЗА" ================== */
+function styleChips(){
+  document.querySelectorAll('#filterChips .chip').forEach(c => {
+    const active = c.dataset.f === dbFilter;
+    c.className = 'chip whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-bold border ' +
+      (active ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-300');
+  });
+}
+
+function passFilter(r){
+  switch (dbFilter) {
+    case 'scanned': return !!r._scanned;
+    case 'notscanned': return !r._scanned;
+    case 'other': return !['В работе','В ремонте','Списана'].includes(String(r.status || ''));
+    case 'all': return true;
+    default: return String(r.status || '') === dbFilter;
+  }
+}
+
+function renderDb(){
+  const q = $('searchInput').value.trim().toLowerCase();
+  const filtered = [];
+  for (let i = 0; i < inventoryData.length; i++) {
+    const r = inventoryData[i];
+    if (!passFilter(r)) continue;
+    if (q) {
+      const hay = (getBarcode(r) + ' ' + (r.product_name||'') + ' ' + (r['КодФормы']||'') + ' ' + (r.storage_location||'')).toLowerCase();
+      if (!hay.includes(q)) continue;
+    }
+    filtered.push({ r, i });
+  }
+  $('dbCount').textContent = `Найдено: ${filtered.length} из ${inventoryData.length}`;
+  const slice = filtered.slice(0, dbShown);
+  $('dbList').innerHTML = slice.map(({r, i}) => `
+    <div class="db-row bg-white rounded-xl p-3 shadow-sm border border-gray-200 active:bg-blue-50 cursor-pointer" data-i="${i}">
+      <div class="flex justify-between items-start gap-2">
+        <div class="font-semibold text-sm leading-snug">${esc(r.product_name || '(без названия)')}</div>
+        ${r._scanned ? '<span class="text-green-600 font-bold text-xs whitespace-nowrap">✅</span>' : ''}
+      </div>
+      <div class="text-[11px] text-gray-400 font-mono mt-0.5">${esc(getBarcode(r))} · ${esc(r['КодФормы']||'')}</div>
+      <div class="flex flex-wrap gap-1.5 mt-1.5 items-center">
+        ${r.storage_location ? `<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700">📍 ${esc(r.storage_location)}</span>` : ''}
+        ${statusBadge(r.status)}
+      </div>
+    </div>`).join('') || '<div class="text-center text-gray-400 text-sm py-8">Ничего не найдено</div>';
+
+  const more = $('moreBtn');
+  if (filtered.length > dbShown) { more.classList.remove('hidden'); more.textContent = `Показать ещё (${filtered.length - dbShown})`; }
+  else more.classList.add('hidden');
+}
+
+$('dbList')?.addEventListener?.('click', () => {}); // placeholder
+document.addEventListener('click', e => {
+  const row = e.target.closest('.db-row');
+  if (row) openCard(+row.dataset.i, false);
+});
+
+function statusBadge(s){
+  s = String(s || '').trim();
+  if (!s) return '<span class="px-2 py-0.5 rounded-full text-[11px] bg-gray-100 text-gray-500">нет статуса</span>';
+  let cls = 'bg-gray-100 text-gray-700';
+  if (s === 'В работе') cls = 'bg-green-100 text-green-700';
+  else if (s === 'В ремонте') cls = 'bg-orange-100 text-orange-700';
+  else if (s === 'Списана') cls = 'bg-red-100 text-red-600';
+  else if (s.includes('проверке')) cls = 'bg-blue-100 text-blue-700';
+  else if (s.includes('литье')) cls = 'bg-indigo-100 text-indigo-700';
+  else if (s.includes('остановлено') || s === 'На консервации') cls = 'bg-purple-100 text-purple-700';
+  return `<span class="px-2 py-0.5 rounded-full text-[11px] font-medium ${cls}">${esc(s)}</span>`;
+}
+
+/* ================== СПИСКИ / СТАТИСТИКА ================== */
+function updateStats(){
+  const total = inventoryData.length;
+  const done = inventoryData.filter(r => r._scanned).length;
+  $('hdrStats').textContent = total ? `${done}/${total}` : '—';
+  $('statDone').textContent = done;
+  $('statTotal').textContent = total;
+  $('progressBar').style.width = total ? (done / total * 100).toFixed(1) + '%' : '0%';
+}
+
+function renderRecent(){
+  const el = $('recentList');
+  if (!sessionLog.length) { el.innerHTML = '<div class="text-gray-400 text-xs">Пока ничего не отсканировано</div>'; return; }
+  el.innerHTML = sessionLog.slice(0, 25).map(x => {
+    const r = inventoryData[x.i];
+    if (!r) return '';
+    return `<div class="flex items-center gap-2 bg-gray-50 rounded-lg p-2 cursor-pointer active:bg-blue-50" data-i="${x.i}" data-recent="1">
+      <span class="text-green-600 font-bold">✅</span>
+      <div class="flex-grow min-w-0">
+        <div class="text-xs font-semibold truncate">${esc(r.product_name || '')}</div>
+        <div class="text-[10px] text-gray-400 truncate">${esc(x.note)} · ${esc(x.t)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+document.addEventListener('click', e => {
+  const rec = e.target.closest('[data-recent]');
+  if (rec) openCard(+rec.dataset.i, false);
+});
+
+/* ================== СБРОС / ЭКСПОРТ ================== */
+function resetMarks(){
+  if (!confirm('Сбросить все отметки этой сессии?')) return;
+  inventoryData.forEach(r => { r.notes = r._baseNote; r['Дата проверки'] = ''; delete r._scanned; delete r._scannedAt; });
+  sessionLog = []; notFoundLog = [];
+  persist(); updateStats(); renderRecent(); renderNF();
+  toast('Отметки сброшены', 'success');
+}
+
+function resetAll(){
+  if (!confirm('Начать заново? Все отметки будут удалены, база загрузится с сервера.')) return;
+  localStorage.removeItem(LS_KEY);
+  location.reload();
+}
+
+function exportData(){
+  if (!inventoryData.length) { toast('Нет данных для экспорта', 'error'); return; }
+  const rows = inventoryData.map(r => {
+    const c = {};
+    for (const k of Object.keys(r)) if (!k.startsWith('_')) c[k] = r[k];
+    return c;
+  });
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'Инвентаризация');
+  if (notFoundLog.length) {
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(notFoundLog.map(x => ({Штрихкод: x.code, Время: x.t}))), 'Не найдены в базе');
+  }
+  const d = new Date(), p = n => String(n).padStart(2, '0');
+  XLSX.writeFile(wb, `Инвентаризация_${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}_${p(d.getHours())}-${p(d.getMinutes())}.xlsx`);
+  toast('Файл выгружен', 'success');
+}
+
+/* ================== ЗВУК / ТОСТ ================== */
+function beep(){
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.frequency.value = 1250; o.type = 'square'; g.gain.value = 0.06;
+    o.start();
+    setTimeout(() => { o.stop(); ctx.close(); }, 140);
+  } catch(e){}
+}
+
+let toastTimer;
+function toast(msg, type){
+  const t = $('toast');
+  t.textContent = msg;
+  t.className = 'fixed top-16 left-1/2 -translate-x-1/2 z-[60] px-4 py-2.5 rounded-xl text-sm font-bold shadow-lg ' +
+    (type === 'error' ? 'bg-red-600 text-white' : type === 'success' ? 'bg-green-600 text-white' : 'bg-gray-800 text-white');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.add('hidden'), 2200);
+  t.classList.remove('hidden');
+}
+</script>
 </body>
 </html>
