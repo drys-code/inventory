@@ -295,6 +295,7 @@
 <div id="scanOverlay" class="hidden">
   <div class="scan-top">
     <button class="scan-btn" onclick="closeScanner()">✕ Закрыть</button>
+    <button class="scan-btn" onclick="runDiagnostics()" style="font-size:15px;" title="Диагностика камеры">🔬</button>
     <button id="torchBtn" class="scan-btn" onclick="toggleTorch()" style="font-size:16px;padding:10px 18px;">🔦 Фонарик</button>
   </div>
   <div class="scan-body">
@@ -324,7 +325,7 @@
 
 <script>
 /* ================= ДАННЫЕ ================= */
-const LS_KEY='inventoryApp_v5';
+const LS_KEY='inventoryApp_v6';
 const DB_FILE='inventory.xlsx';
 let inventoryData=[], sessionLog=[], notFoundLog=[];
 let currentIndex=-1, cardReturnTab='scan';
@@ -473,6 +474,7 @@ const SCAN_FORMATS=['ean_13','ean_8','upc_a','upc_e','code_128','code_39','code_
 let mediaStream=null, scanningActive=false, nativeDetector=null, zxingReader=null;
 let torchOn=false, lastCode='', lastTime=0;
 let detectCanvas=null, detectCtx=null;
+let camCaps=null, focusKickTimer=null;
 const DETECT_MAX_W=720, DETECT_INTERVAL=45;
 
 function getActiveVideoEl(){
@@ -501,17 +503,20 @@ async function openScanner(){
       try{ nativeDetector=new BarcodeDetector({formats:SCAN_FORMATS}); }catch(e){ nativeDetector=new BarcodeDetector(); }
       scanningActive=true;
       const t=currentTrack(); if(t) setupZoom(t);
+      startFocusKick();
       nativeLoop();
       setScanStatus('Наведите камеру · нативный движок');
     }catch(err){ setScanStatus('Ошибка камеры: '+err.message); toast('Нет доступа к камере','err'); }
   } else if(engine==='quagga'){
     scanningActive=true;
     startQuagga();
+    startFocusKick();
   } else if(engine==='zxing'){
     try{
       await startStream();
       scanningActive=true;
       const t=currentTrack(); if(t) setupZoom(t);
+      startFocusKick();
       startZxing();
       setScanStatus('Наведите камеру · ZXing');
     }catch(err){ setScanStatus('Ошибка камеры: '+err.message); toast('Нет доступа к камере','err'); }
@@ -524,21 +529,99 @@ async function startStream(){
   const constraints={ audio:false, video:{
     facingMode:{ideal:'environment'},
     width:{ideal:1280}, height:{ideal:720},
-    frameRate:{ideal:30}
+    frameRate:{ideal:30},
+    focusMode:'continuous'
   }};
   mediaStream=await navigator.mediaDevices.getUserMedia(constraints);
   const video=$('scanVideo');
   video.srcObject=mediaStream;
   await video.play();
+  const track=mediaStream.getVideoTracks()[0];
+  try{ camCaps=track.getCapabilities?track.getCapabilities():{}; }catch(e){ camCaps={}; }
+  await applyContinuousFocus(track);
+  return track;
+}
+
+/* --- управление фокусом --- */
+async function applyContinuousFocus(track){
   try{
-    const track=mediaStream.getVideoTracks()[0];
-    const caps=track.getCapabilities?track.getCapabilities():{};
-    if(caps.focusMode && Array.isArray(caps.focusMode) && caps.focusMode.includes('continuous')){
+    if(camCaps && Array.isArray(camCaps.focusMode) && camCaps.focusMode.includes('continuous')){
       await track.applyConstraints({advanced:[{focusMode:'continuous'}]});
     }
   }catch(e){}
 }
 
+async function tapFocus(e){
+  const frame=document.querySelector('.scan-frame');
+  const rect=frame.getBoundingClientRect();
+  const dot=document.createElement('div');
+  dot.className='focus-dot';
+  dot.style.left=(e.clientX-rect.left)+'px';
+  dot.style.top=(e.clientY-rect.top)+'px';
+  frame.appendChild(dot);
+  setTimeout(()=>dot.remove(),700);
+
+  const track=currentTrack();
+  if(!track){ toast('Нет потока камеры','err'); return; }
+  try{ if(!camCaps) camCaps=track.getCapabilities?track.getCapabilities():{}; }catch(_){}
+  const x=(e.clientX-rect.left)/rect.width, y=(e.clientY-rect.top)/rect.height;
+  let used=[];
+
+  try{ if(camCaps.pointsOfInterest){ await track.applyConstraints({advanced:[{pointsOfInterest:[{x,y}]}]}); used.push('точка'); } }catch(_){}
+  try{
+    const fm=camCaps.focusMode;
+    if(Array.isArray(fm) && fm.includes('single-shot')){
+      await track.applyConstraints({advanced:[{focusMode:'single-shot'}]}); used.push('single-shot');
+      setTimeout(()=>applyContinuousFocus(track),900);
+    } else if(Array.isArray(fm) && fm.includes('manual')){
+      await track.applyConstraints({advanced:[{focusMode:'manual'}]}); used.push('manual');
+      setTimeout(()=>applyContinuousFocus(track),200);
+    }
+  }catch(_){}
+
+  if(used.length) toast('Фокус: '+used.join(', '),'info');
+  else toast('Камера не даёт управлять фокусом','err');
+}
+
+function startFocusKick(){
+  stopFocusKick();
+  focusKickTimer=setInterval(()=>{
+    const track=currentTrack(); if(!track) return;
+    try{
+      const fm=camCaps && camCaps.focusMode;
+      if(Array.isArray(fm) && fm.includes('continuous')){
+        const s=track.getSettings?track.getSettings():{};
+        if(s.focusMode!=='continuous') applyContinuousFocus(track);
+      } else if(Array.isArray(fm) && fm.includes('single-shot')){
+        track.applyConstraints({advanced:[{focusMode:'single-shot'}]});
+      }
+    }catch(e){}
+  },3000);
+}
+function stopFocusKick(){ if(focusKickTimer){ clearInterval(focusKickTimer); focusKickTimer=null; } }
+
+/* --- диагностика камеры --- */
+function runDiagnostics(){
+  const track=currentTrack();
+  let out='ДВИЖОК: '+(chooseEngine()||'нет')+' · активен: '+(scanEngine||'нет')+'\n\n';
+  if(!track){ out+='Нет активного потока камеры.\nСначала нажмите «Сканировать код», потом диагностику.'; alert(out); return; }
+  let caps={},settings={};
+  try{caps=track.getCapabilities?track.getCapabilities():{};}catch(e){}
+  try{settings=track.getSettings?track.getSettings():{};}catch(e){}
+  out+='=== ВОЗМОЖНОСТИ (capabilities) ===\n';
+  out+='focusMode: '+(caps.focusMode?JSON.stringify(caps.focusMode):'НЕ поддерживается')+'\n';
+  out+='focusDistance: '+(caps.focusDistance?JSON.stringify(caps.focusDistance):'НЕ поддерживается')+'\n';
+  out+='pointsOfInterest: '+(caps.pointsOfInterest?'есть':'НЕТ')+'\n';
+  out+='torch(фонарик): '+(caps.torch?'есть':'НЕТ')+'\n';
+  out+='zoom: '+(caps.zoom?JSON.stringify(caps.zoom):'НЕТ')+'\n\n';
+  out+='=== ТЕКУЩИЕ НАСТРОЙКИ (settings) ===\n';
+  out+='focusMode: '+(settings.focusMode||'-')+'\n';
+  out+='разрешение: '+settings.width+'x'+settings.height+'\n';
+  out+='кадров/сек: '+settings.frameRate;
+  alert(out);
+}
+
+/* --- детекция (нативный) --- */
 function ensureDetectCanvas(){
   if(!detectCanvas){
     detectCanvas=document.createElement('canvas');
@@ -590,7 +673,7 @@ function startQuagga(){
     }
     Quagga.start();
     setScanStatus('Наведите камеру · Quagga');
-    setTimeout(()=>{ const t=currentTrack(); if(t) setupZoom(t); },600);
+    setTimeout(()=>{ const t=currentTrack(); if(t){ setupZoom(t); try{camCaps=t.getCapabilities?t.getCapabilities():{};}catch(_){} } },600);
   });
 }
 
@@ -608,30 +691,6 @@ function startZxing(){
     else if(typeof zxingReader.decodeFromConstraints==='function'){ zxingReader.decodeFromConstraints({video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}},video,cb); }
     else{ zxingReader.decodeFromVideoDevice(undefined,video,cb); }
   }catch(e){ setScanStatus('Ошибка сканера: '+e.message); }
-}
-
-async function tapFocus(e){
-  const frame=document.querySelector('.scan-frame');
-  const rect=frame.getBoundingClientRect();
-  const dot=document.createElement('div');
-  dot.className='focus-dot';
-  dot.style.left=(e.clientX-rect.left)+'px';
-  dot.style.top=(e.clientY-rect.top)+'px';
-  frame.appendChild(dot);
-  setTimeout(()=>dot.remove(),700);
-  const track=currentTrack();
-  if(!track) return;
-  try{
-    const caps=track.getCapabilities?track.getCapabilities():{};
-    const x=(e.clientX-rect.left)/rect.width, y=(e.clientY-rect.top)/rect.height;
-    const adv={};
-    if(caps.pointsOfInterest) adv.pointsOfInterest=[{x,y}];
-    if(caps.focusMode && Array.isArray(caps.focusMode) && caps.focusMode.includes('single-shot')) adv.focusMode='single-shot';
-    if(Object.keys(adv).length) await track.applyConstraints({advanced:[adv]});
-    if(caps.focusMode && Array.isArray(caps.focusMode) && caps.focusMode.includes('continuous')){
-      setTimeout(()=>{ track.applyConstraints({advanced:[{focusMode:'continuous'}]}).catch(()=>{}); },900);
-    }
-  }catch(err){}
 }
 
 function setupZoom(track){
@@ -678,10 +737,8 @@ function handleDetected(code){
 
 function closeScanner(){
   scanningActive=false;
-  if(scanEngine==='quagga' && window.Quagga){
-    try{ Quagga.stop(); }catch(e){}
-    const qc=$('quaggaContainer'); if(qc) qc.innerHTML='';
-  }
+  stopFocusKick();
+  if(scanEngine==='quagga' && window.Quagga){ try{Quagga.stop();}catch(e){} const qc=$('quaggaContainer'); if(qc) qc.innerHTML=''; }
   if(scanEngine==='zxing' && zxingReader){ try{zxingReader.reset();}catch(e){} zxingReader=null; }
   if(mediaStream){ mediaStream.getTracks().forEach(t=>t.stop()); mediaStream=null; }
   const v=$('scanVideo'); if(v) v.srcObject=null;
