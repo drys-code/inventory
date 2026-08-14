@@ -20,7 +20,6 @@
   .hidden{display:none !important;}
   .small{font-size:12px;} .muted{color:var(--muted);}
 
-  /* ===== Загрузочный экран ===== */
   #boot{position:fixed;inset:0;background:var(--blue-d);z-index:100;display:flex;align-items:center;justify-content:center;color:#fff;}
   .boot-box{text-align:center;padding:24px;max-width:320px;}
   .boot-title{font-size:22px;font-weight:700;margin-bottom:12px;}
@@ -28,7 +27,6 @@
   .boot-bar{height:6px;background:rgba(255,255,255,.2);border-radius:3px;overflow:hidden;}
   #bootBar{height:100%;width:0;background:#4ade80;transition:width .3s;}
 
-  /* ===== Шапка ===== */
   header{position:sticky;top:0;z-index:30;background:var(--blue-d);color:#fff;padding:10px 14px;box-shadow:0 2px 6px rgba(0,0,0,.15);}
   .hdr{max-width:560px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:8px;}
   .hdr h1{font-size:16px;margin:0;line-height:1.2;}
@@ -37,7 +35,6 @@
   #hdrStats{font-size:13px;font-weight:700;}
   .pill{display:inline-block;font-size:10px;padding:2px 8px;border-radius:10px;margin-top:3px;font-weight:600;}
   .pill.online{background:#16a34a;} .pill.offline{background:#b45309;}
-  .pill.ready{background:#065f46;}
 
   main{max-width:560px;margin:0 auto;padding:14px;padding-bottom:90px;}
   section{animation:fadeIn .2s ease-out;}
@@ -46,16 +43,13 @@
   .card{background:var(--card);border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.08);}
   .card-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
 
-  /* ===== Прогресс ===== */
   .progress-row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;}
   .progress-bar{height:10px;background:var(--border);border-radius:5px;overflow:hidden;}
   #progressBar{height:100%;background:var(--green);border-radius:5px;transition:width .3s;width:0;}
 
-  /* ===== Кнопки ===== */
   .btn{display:block;width:100%;padding:13px;border-radius:12px;font-size:15px;font-weight:700;text-align:center;transition:transform .1s;}
   .btn:active{transform:scale(.97);}
   .btn-green{background:var(--green);color:#fff;}
-  .btn-green-d{background:var(--green-d);color:#fff;}
   .btn-blue{background:var(--blue);color:#fff;}
   .btn-gray{background:#e5e7eb;color:var(--text);}
   .btn-red{background:#fee2e2;color:var(--red);}
@@ -63,17 +57,14 @@
   .pulse{animation:pulse 2s infinite;}
   @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(22,163,74,.5)}70%{box-shadow:0 0 0 18px rgba(22,163,74,0)}100%{box-shadow:0 0 0 0 rgba(22,163,74,0)}}
 
-  /* ===== Недавно проверено ===== */
   .recent-row{display:flex;gap:10px;align-items:flex-start;background:#f9fafb;border-radius:10px;padding:9px;margin-bottom:6px;cursor:pointer;}
   .recent-row:active{background:#eff6ff;}
   .mark{font-size:18px;line-height:1;}
-  .mark.ok{} .mark.issue{}
   .recent-info{flex:1;min-width:0;}
   .recent-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .recent-note{font-size:11px;color:var(--muted);margin-top:1px;}
   .recent-note.issue-text{color:var(--orange);font-weight:600;}
 
-  /* ===== Список базы ===== */
   #searchInput{width:100%;padding:12px;border:1px solid var(--border);border-radius:12px;font-size:14px;background:#fff;outline:none;}
   #searchInput:focus{border-color:var(--blue);}
   .chips{display:flex;gap:6px;overflow-x:auto;padding:8px 0;scrollbar-width:none;}
@@ -90,7 +81,6 @@
   .loc-badge{font-size:10px;font-weight:700;background:#eff6ff;color:var(--blue);padding:2px 8px;border-radius:8px;}
   .st-badge{font-size:10px;font-weight:700;color:#fff;padding:2px 8px;border-radius:8px;}
 
-  /* ===== Карточка объекта ===== */
   .item-card{border-radius:14px;padding:16px;margin-bottom:12px;border-left:8px solid var(--gray);background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.08);}
   .item-name{font-size:18px;font-weight:700;line-height:1.3;margin-bottom:10px;}
   .field{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.04);}
@@ -98,7 +88,6 @@
   .field .v.mono{font-family:monospace;font-size:15px;}
   .notes-box{margin-top:8px;font-size:12px;color:var(--muted);background:rgba(0,0,0,.03);padding:8px;border-radius:8px;}
 
-  /* Большая отметка о проверке */
   .marked-banner{display:flex;gap:12px;align-items:center;border-radius:14px;padding:14px;margin-bottom:12px;color:#fff;animation:fadeIn .25s;}
   .marked-banner.ok{background:var(--green);}
   .marked-banner.issue{background:var(--orange);}
@@ -106,7 +95,6 @@
   .marked-title{font-size:18px;font-weight:800;letter-spacing:.5px;}
   .marked-note{font-size:13px;font-weight:600;margin-top:2px;}
   .marked-time{font-size:11px;opacity:.85;margin-top:2px;}
-
   .session-badge{display:inline-block;font-size:12px;font-weight:700;color:#fff;background:var(--green);padding:4px 10px;border-radius:10px;margin-bottom:8px;}
 
   .quick-chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;}
@@ -114,20 +102,18 @@
   .custom-row{display:flex;gap:8px;margin-top:8px;}
   .custom-row input{flex:1;padding:11px;border:1px solid var(--border);border-radius:10px;font-size:13px;outline:none;}
 
-  /* ===== Не найдено ===== */
   .nf-box{background:#fef2f2;border-left:5px solid var(--red);border-radius:14px;padding:16px;margin-bottom:12px;}
   .nf-code{font-family:monospace;font-size:20px;font-weight:700;background:#fff;border:1px solid #fecaca;padding:8px;border-radius:8px;margin:10px 0;}
 
-  /* ===== Нижняя навигация ===== */
   nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);z-index:30;box-shadow:0 -2px 8px rgba(0,0,0,.08);}
   .nav-inner{max-width:560px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;}
   .nav-btn{padding:13px;font-size:13px;font-weight:700;color:var(--muted);background:none;border-top:3px solid transparent;}
   .nav-btn.active{color:var(--blue);border-top-color:var(--blue);background:#eff6ff;}
 
-  /* ===== Оверлей сканера ===== */
+  /* ===== Сканер ===== */
   #scanOverlay{position:fixed;inset:0;background:#000;z-index:50;display:flex;flex-direction:column;}
-  .scan-top{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;color:#fff;}
-  .scan-btn{background:rgba(255,255,255,.15);color:#fff;padding:8px 14px;border-radius:10px;font-size:13px;font-weight:700;}
+  .scan-top{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;color:#fff;gap:8px;}
+  .scan-btn{background:rgba(255,255,255,.15);color:#fff;padding:10px 14px;border-radius:10px;font-size:14px;font-weight:700;}
   .scan-btn.torch-on{background:#facc15;color:#000;}
   .scan-body{flex:1;display:flex;align-items:center;justify-content:center;padding:0 12px;overflow:hidden;}
   .scan-frame{position:relative;width:100%;max-width:520px;}
@@ -135,18 +121,21 @@
   .guide{position:absolute;left:5%;right:5%;top:18%;bottom:18%;border:2px solid rgba(74,222,128,.9);border-radius:14px;pointer-events:none;}
   .laser{position:absolute;left:8%;right:8%;height:2px;background:#4ade80;box-shadow:0 0 10px 2px rgba(74,222,128,.8);animation:laser 1.5s ease-in-out infinite;pointer-events:none;}
   @keyframes laser{0%,100%{top:22%}50%{top:80%}}
+  .focus-dot{position:absolute;width:54px;height:54px;border:2px solid #4ade80;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;animation:focusFade .7s forwards;}
+  @keyframes focusFade{0%{opacity:1;transform:translate(-50%,-50%) scale(1.2)}100%{opacity:0;transform:translate(-50%,-50%) scale(.8)}}
   .scan-bottom{padding:14px;text-align:center;}
-  #scanStatus{color:#4ade80;font-size:13px;font-weight:600;min-height:20px;margin-bottom:10px;}
+  #scanStatus{color:#4ade80;font-size:13px;font-weight:600;min-height:20px;margin-bottom:8px;}
+  .scan-hint{color:rgba(255,255,255,.6);font-size:11px;margin-bottom:10px;}
+  .zoom-row{display:flex;align-items:center;gap:10px;max-width:300px;margin:0 auto 12px;color:#fff;}
+  #zoomRange{flex:1;accent-color:#4ade80;}
   .scan-cancel{width:100%;max-width:300px;background:rgba(255,255,255,.15);color:#fff;padding:12px;border-radius:12px;font-weight:700;}
 
-  /* ===== Тост ===== */
   #toast{position:fixed;top:60px;left:50%;transform:translateX(-50%);z-index:60;padding:11px 18px;border-radius:12px;font-size:13px;font-weight:700;color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.25);}
   #toast.ok{background:var(--green);} #toast.err{background:var(--red);} #toast.info{background:#374151;}
 </style>
 </head>
 <body>
 
-<!-- Загрузочный экран -->
 <div id="boot">
   <div class="boot-box">
     <div class="boot-title">📦 Инвентаризация</div>
@@ -169,7 +158,6 @@
 </header>
 
 <main>
-  <!-- ======== СКАНИРОВАНИЕ ======== -->
   <section id="view-scan">
     <div id="restoreBanner" class="card hidden" style="background:#fffbeb;border:1px solid #fcd34d;">
       <div style="font-size:13px;">💾 <b>Восстановлена прошлая сессия</b> (автосохранение).</div>
@@ -185,7 +173,7 @@
     </div>
 
     <button id="bigScanBtn" class="btn btn-green btn-big pulse" onclick="openScanner()">📷 Сканировать код</button>
-    <p class="small muted" style="text-align:center;margin:8px 0 14px;">Долго целиться не нужно — просто наведите камеру на этикетку</p>
+    <p class="small muted" style="text-align:center;margin:8px 0 14px;">Поднесите этикетку ближе · при плохом свете включите фонарик</p>
 
     <div class="card">
       <div class="card-title">База данных</div>
@@ -206,7 +194,6 @@
     </div>
   </section>
 
-  <!-- ======== БАЗА ======== -->
   <section id="view-db" class="hidden">
     <input id="searchInput" type="search" placeholder="🔍 Поиск: штрихкод, название, код, место…">
     <div class="chips" id="filterChips">
@@ -223,11 +210,9 @@
     <button id="moreBtn" class="btn btn-gray hidden" onclick="dbShown+=150;renderDb()">Показать ещё</button>
   </section>
 
-  <!-- ======== КАРТОЧКА ======== -->
   <section id="view-card" class="hidden">
     <button class="btn btn-gray" style="width:auto;display:inline-block;padding:8px 14px;font-size:13px;margin-bottom:10px;" onclick="closeCard()">← Назад</button>
 
-    <!-- Большая отметка о проверке -->
     <div id="markedBanner" class="marked-banner hidden">
       <div class="marked-icon" id="markedIcon">✅</div>
       <div>
@@ -268,7 +253,6 @@
     </div>
   </section>
 
-  <!-- ======== НЕ НАЙДЕНО ======== -->
   <section id="view-notfound" class="hidden">
     <div class="nf-box">
       <h3 style="margin:0;color:var(--red);">⚠️ Штрихкод не найден в базе</h3>
@@ -291,7 +275,7 @@
 <div id="scanOverlay" class="hidden">
   <div class="scan-top">
     <button class="scan-btn" onclick="closeScanner()">✕ Закрыть</button>
-    <button id="torchBtn" class="scan-btn" onclick="toggleTorch()">🔦 Фонарик</button>
+    <button id="torchBtn" class="scan-btn" onclick="toggleTorch()" style="font-size:16px;padding:10px 18px;">🔦 Фонарик</button>
   </div>
   <div class="scan-body">
     <div class="scan-frame">
@@ -302,93 +286,65 @@
   </div>
   <div class="scan-bottom">
     <div id="scanStatus"></div>
+    <div class="scan-hint">Нажмите на экран, чтобы сфокусироваться · подсветите при плохом свете</div>
+    <div id="zoomWrap" class="zoom-row hidden">
+      <span>🔍</span>
+      <input type="range" id="zoomRange">
+    </div>
     <button class="scan-cancel" onclick="closeScanner()">Отмена</button>
   </div>
 </div>
 
 <div id="toast" class="hidden"></div>
 
-<!-- ЛОКАЛЬНЫЕ БИБЛИОТЕКИ (должны лежать в папке lib/) -->
 <script src="lib/xlsx.full.min.js"></script>
 <script src="lib/zxing.min.js"></script>
 
 <script>
-/* ============================================================
-   ДАННЫЕ
-============================================================ */
-const LS_KEY = 'inventoryApp_v4';
-const DB_FILE = 'inventory.xlsx';
-let inventoryData = [];
-let sessionLog = [];
-let notFoundLog = [];
-let currentIndex = -1;
-let cardReturnTab = 'scan';
-let dbFilter = 'all';
-let dbShown = 150;
+/* ================= ДАННЫЕ ================= */
+const LS_KEY='inventoryApp_v4';
+const DB_FILE='inventory.xlsx';
+let inventoryData=[], sessionLog=[], notFoundLog=[];
+let currentIndex=-1, cardReturnTab='scan';
+let dbFilter='all', dbShown=150;
 
-const $ = id => document.getElementById(id);
+const $=id=>document.getElementById(id);
 function getBarcode(r){ return String(r.barcode ?? r['Штрихкод'] ?? '').trim(); }
-function esc(s){ return String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
-function tint(hex, a){
-  const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
-  return `rgba(${r},${g},${b},${a})`;
-}
+function esc(s){ return String(s ?? '').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function tint(hex,a){ const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16); return `rgba(${r},${g},${b},${a})`; }
 
-/* Цвета статусов */
-const STATUS_COLORS = {
-  'В работе':'#16a34a','В ремонте':'#ea580c','Списана':'#6b7280',
-  'На консервации':'#2563eb','Производство остановлено':'#7c3aed','Производство в литье':'#0891b2'
-};
-function statusColor(s){
-  s = String(s||'').trim();
-  if (STATUS_COLORS[s]) return STATUS_COLORS[s];
-  if (s.includes('проверке')) return '#0284c7';
-  if (s.includes('консерв')) return '#2563eb';
-  return '#9ca3af';
-}
+const STATUS_COLORS={ 'В работе':'#16a34a','В ремонте':'#ea580c','Списана':'#6b7280','На консервации':'#2563eb','Производство остановлено':'#7c3aed','Производство в литье':'#0891b2' };
+function statusColor(s){ s=String(s||'').trim(); if(STATUS_COLORS[s]) return STATUS_COLORS[s]; if(s.includes('проверке')) return '#0284c7'; if(s.includes('консерв')) return '#2563eb'; return '#9ca3af'; }
 
-/* ============================================================
-   ЗАГРУЗКА / АВТОСОХРАНЕНИЕ
-============================================================ */
-window.addEventListener('DOMContentLoaded', () => {
-  bootCheck();
-  bindUI();
-  tryRestore();
-});
+/* ================= СТАРТ ================= */
+window.addEventListener('DOMContentLoaded',()=>{ bootCheck(); bindUI(); tryRestore(); });
 
 function bindUI(){
-  $('fileInput').addEventListener('change', onManualFile);
-  $('searchInput').addEventListener('input', () => { clearTimeout(window._st); dbShown=150; window._st=setTimeout(renderDb,120); });
-  document.querySelectorAll('#filterChips .chip').forEach(c => {
-    c.onclick = () => { dbFilter=c.dataset.f; dbShown=150; styleChips(); renderDb(); };
-  });
-  window.addEventListener('online', updateNetPill);
-  window.addEventListener('offline', updateNetPill);
+  $('fileInput').addEventListener('change',onManualFile);
+  $('searchInput').addEventListener('input',()=>{ clearTimeout(window._st); dbShown=150; window._st=setTimeout(renderDb,120); });
+  document.querySelectorAll('#filterChips .chip').forEach(c=>{ c.onclick=()=>{ dbFilter=c.dataset.f; dbShown=150; styleChips(); renderDb(); }; });
+  window.addEventListener('online',updateNetPill); window.addEventListener('offline',updateNetPill);
   updateNetPill();
+  // фокус по тапу на видео
+  $('scanVideo').addEventListener('click',tapFocus);
 }
 
-function updateNetPill(){
-  const p=$('netPill');
-  if(navigator.onLine){ p.textContent='🌐 Онлайн'; p.className='pill online'; }
-  else{ p.textContent='📴 Офлайн'; p.className='pill offline'; }
-}
+function updateNetPill(){ const p=$('netPill'); if(navigator.onLine){p.textContent='🌐 Онлайн';p.className='pill online';} else {p.textContent='📴 Офлайн';p.className='pill offline';} }
 
 function bootCheck(){
-  const bar=$('bootBar'); const msg=$('bootMsg');
+  const bar=$('bootBar'), msg=$('bootMsg');
   bar.style.width='30%';
   let problems=[];
   if(!window.XLSX) problems.push('модуль Excel (lib/xlsx.full.min.js)');
   const hasNative='BarcodeDetector' in window;
   if(!hasNative && !window.ZXing) problems.push('модуль сканера (lib/zxing.min.js)');
-
   bar.style.width='100%';
   if(problems.length){
-    msg.innerHTML='⚠️ Не загружены: '+problems.join(', ')+
-      '<br><br>Скачайте эти файлы в папку <b>lib/</b> рядом с index.html (см. инструкцию) и обновите страницу.';
+    msg.innerHTML='⚠️ Не загружены: '+problems.join(', ')+'<br><br>Скачайте эти файлы в папку <b>lib/</b> и обновите страницу.';
   } else {
-    const mode = hasNative ? 'быстрый сканер ✅' : 'совместимый сканер';
-    msg.textContent='✅ Готов к работе ('+mode+'). Можно начинать инвентаризацию.';
-    setTimeout(()=>{ $('boot').classList.add('hidden'); }, 900);
+    const mode=hasNative?'быстрый сканер ✅':'совместимый сканер';
+    msg.textContent='✅ Готов к работе ('+mode+'). Можно начинать.';
+    setTimeout(()=>{ $('boot').classList.add('hidden'); },900);
   }
 }
 
@@ -410,9 +366,9 @@ function setSource(t){ $('srcLabel').textContent=t; }
 async function loadFromServer(){
   setSource('⏳ Загрузка базы с сервера…');
   try{
-    const res=await fetch(DB_FILE+'?t='+Date.now(), {cache:'no-store'});
+    const res=await fetch(DB_FILE+'?t='+Date.now(),{cache:'no-store'});
     if(!res.ok) throw new Error('HTTP '+res.status);
-    processWorkbook(await res.arrayBuffer(), '🌐 Файл с сервера: '+DB_FILE);
+    processWorkbook(await res.arrayBuffer(),'🌐 Файл с сервера: '+DB_FILE);
   }catch(e){
     setSource('⚠️ Файл '+DB_FILE+' не найден рядом со страницей');
     toast('База не найдена. Загрузите файл с телефона.','err');
@@ -428,7 +384,7 @@ function onManualFile(e){
   reader.readAsArrayBuffer(file); e.target.value='';
 }
 
-function processWorkbook(buf, sourceLabel){
+function processWorkbook(buf,sourceLabel){
   const wb=XLSX.read(new Uint8Array(buf),{type:'array'});
   let rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:'',raw:false});
   rows=rows.filter(r=>{ const b=getBarcode(r).toLowerCase(); return b && b!=='barcode' && b!=='штрихкод'; });
@@ -444,25 +400,27 @@ function processWorkbook(buf, sourceLabel){
 }
 
 function afterDataReady(){ updateStats(); renderRecent(); renderNF(); }
-function persist(){ try{ localStorage.setItem(LS_KEY, JSON.stringify({data:inventoryData,log:sessionLog,nf:notFoundLog})); }catch(e){} }
+function persist(){ try{ localStorage.setItem(LS_KEY,JSON.stringify({data:inventoryData,log:sessionLog,nf:notFoundLog})); }catch(e){} }
 
-/* ============================================================
-   НАВИГАЦИЯ
-============================================================ */
+/* ================= НАВИГАЦИЯ ================= */
 function showView(v){
-  ['scan','db','card','notfound'].forEach(x=>$('view-'+x).classList.toggle('hidden', x!==v));
-  $('navScan').classList.toggle('active', v==='scan');
-  $('navDb').classList.toggle('active', v==='db');
+  ['scan','db','card','notfound'].forEach(x=>$('view-'+x).classList.toggle('hidden',x!==v));
+  $('navScan').classList.toggle('active',v==='scan');
+  $('navDb').classList.toggle('active',v==='db');
   if(v==='db') renderDb();
   window.scrollTo(0,0);
 }
 
 /* ============================================================
-   СКАНЕР (BarcodeDetector + ZXing fallback)
+   СКАНЕР — оптимизированный
+   (низкое разрешение + детекция на уменьшенном кадре + автофокус)
 ============================================================ */
 const SCAN_FORMATS=['ean_13','ean_8','upc_a','upc_e','code_128','code_39','code_93','itf','codabar','data_matrix','qr_code'];
 let mediaStream=null, scanningActive=false, nativeDetector=null, zxingReader=null;
 let torchOn=false, lastCode='', lastTime=0;
+let detectCanvas=null, detectCtx=null;
+const DETECT_MAX_W=720;      // ширина кадра для анализа (меньше = быстрее)
+const DETECT_INTERVAL=45;    // мс между попытками распознавания
 
 function supportsNative(){ return 'BarcodeDetector' in window; }
 
@@ -478,8 +436,9 @@ async function openScanner(){
       try{ nativeDetector=new BarcodeDetector({formats:SCAN_FORMATS}); }
       catch(e){ nativeDetector=new BarcodeDetector(); }
       scanningActive=true;
+      setupZoom(mediaStream.getVideoTracks()[0]);
       nativeLoop();
-      setScanStatus('Наведите камеру на штрихкод (быстрый режим)');
+      setScanStatus('Наведите камеру · быстрый режим');
     }catch(err){
       setScanStatus('Ошибка камеры: '+err.message);
       toast('Нет доступа к камере','err');
@@ -487,48 +446,62 @@ async function openScanner(){
   } else if(window.ZXing){
     scanningActive=true;
     startZxing();
-    setScanStatus('Наведите камеру на штрихкод (совместимый режим)');
+    setScanStatus('Наведите камеру · совместимый режим');
   } else {
-    setScanStatus('Камера недоступен. Нужен HTTPS и поддержка камеры.');
+    setScanStatus('Камера недоступна. Нужен HTTPS.');
   }
 }
 
 async function startStream(){
+  // ВАЖНО: 1280x720 вместо 1920x1080 — убирает «слайдшоу» и улучшает автофокус
   const constraints={ audio:false, video:{
     facingMode:{ideal:'environment'},
-    width:{ideal:1920}, height:{ideal:1080}, frameRate:{ideal:30}
+    width:{ideal:1280}, height:{ideal:720},
+    frameRate:{ideal:30}
   }};
   mediaStream=await navigator.mediaDevices.getUserMedia(constraints);
   const video=$('scanVideo');
   video.srcObject=mediaStream;
   await video.play();
-  // непрерывный автофокус
+  // непрерывный автофокус (если устройство поддерживает)
   try{
     const track=mediaStream.getVideoTracks()[0];
     const caps=track.getCapabilities?track.getCapabilities():{};
-    if(caps.focusMode && caps.focusMode.includes && caps.focusMode.includes('continuous')){
+    if(caps.focusMode && Array.isArray(caps.focusMode) && caps.focusMode.includes('continuous')){
       await track.applyConstraints({advanced:[{focusMode:'continuous'}]});
     }
   }catch(e){}
 }
 
-function scheduleNext(fn){
-  const video=$('scanVideo');
-  if(video && 'requestVideoFrameCallback' in video) video.requestVideoFrameCallback(fn);
-  else requestAnimationFrame(fn);
+function ensureDetectCanvas(){
+  if(!detectCanvas){
+    detectCanvas=document.createElement('canvas');
+    detectCtx=detectCanvas.getContext('2d',{willReadFrequently:true});
+  }
 }
 
+// Детекция отделена от отрисовки: анализируем уменьшенный кадр с интервалом,
+// поэтому превью не тормозит.
 function nativeLoop(){
+  ensureDetectCanvas();
   const video=$('scanVideo');
-  const detect=async()=>{
+  const step=async()=>{
     if(!scanningActive) return;
-    try{
-      const codes=await nativeDetector.detect(video);
-      if(codes && codes.length){ handleDetected(codes[0].rawValue); return; }
-    }catch(e){}
-    scheduleNext(detect);
+    if(video.readyState>=2 && video.videoWidth){
+      const vw=video.videoWidth, vh=video.videoHeight;
+      const scale=Math.min(1,DETECT_MAX_W/vw);
+      const dw=Math.round(vw*scale), dh=Math.round(vh*scale);
+      if(detectCanvas.width!==dw) detectCanvas.width=dw;
+      if(detectCanvas.height!==dh) detectCanvas.height=dh;
+      detectCtx.drawImage(video,0,0,dw,dh);
+      try{
+        const codes=await nativeDetector.detect(detectCanvas);
+        if(codes && codes.length){ handleDetected(codes[0].rawValue); return; }
+      }catch(e){}
+    }
+    setTimeout(step,DETECT_INTERVAL);
   };
-  scheduleNext(detect);
+  step();
 }
 
 function startZxing(){
@@ -537,27 +510,70 @@ function startZxing(){
   const fmts=[ZXing.BarcodeFormat.EAN_13,ZXing.BarcodeFormat.EAN_8,ZXing.BarcodeFormat.UPC_A,
     ZXing.BarcodeFormat.UPC_E,ZXing.BarcodeFormat.CODE_128,ZXing.BarcodeFormat.CODE_39,
     ZXing.BarcodeFormat.CODE_93,ZXing.BarcodeFormat.ITF,ZXing.BarcodeFormat.DATA_MATRIX,ZXing.BarcodeFormat.QR_CODE];
-  hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, fmts);
-  hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
-  zxingReader=new ZXing.BrowserMultiFormatReader(hints,{delay:120});
+  hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS,fmts);
+  zxingReader=new ZXing.BrowserMultiFormatReader(hints,{delay:150});
   const cb=(result)=>{ if(result) handleDetected(result.getText()); };
   try{
     if(typeof zxingReader.decodeFromVideoElement==='function'){ zxingReader.decodeFromVideoElement(video,cb); }
-    else if(typeof zxingReader.decodeFromConstraints==='function'){ zxingReader.decodeFromConstraints({video:{facingMode:{ideal:'environment'}}},video,cb); }
+    else if(typeof zxingReader.decodeFromConstraints==='function'){ zxingReader.decodeFromConstraints({video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}},video,cb); }
     else{ zxingReader.decodeFromVideoDevice(undefined,video,cb); }
   }catch(e){ setScanStatus('Ошибка сканера: '+e.message); }
 }
 
+/* --- фокус по тапу --- */
+async function tapFocus(e){
+  const video=$('scanVideo');
+  const rect=video.getBoundingClientRect();
+  const x=(e.clientX-rect.left)/rect.width;
+  const y=(e.clientY-rect.top)/rect.height;
+  // визуальный индикатор
+  const frame=document.querySelector('.scan-frame');
+  const dot=document.createElement('div');
+  dot.className='focus-dot';
+  dot.style.left=(e.clientX-rect.left)+'px';
+  dot.style.top=(e.clientY-rect.top)+'px';
+  frame.appendChild(dot);
+  setTimeout(()=>dot.remove(),700);
+  // попытка сфокусироваться
+  const track=mediaStream?mediaStream.getVideoTracks()[0]:null;
+  if(!track) return;
+  try{
+    const caps=track.getCapabilities?track.getCapabilities():{};
+    const adv={};
+    if(caps.pointsOfInterest) adv.pointsOfInterest=[{x,y}];
+    if(caps.focusMode && Array.isArray(caps.focusMode) && caps.focusMode.includes('single-shot')) adv.focusMode='single-shot';
+    if(Object.keys(adv).length) await track.applyConstraints({advanced:[adv]});
+    // вернуть непрерывный фокус
+    if(caps.focusMode && Array.isArray(caps.focusMode) && caps.focusMode.includes('continuous')){
+      setTimeout(()=>{ track.applyConstraints({advanced:[{focusMode:'continuous'}]}).catch(()=>{}); },900);
+    }
+  }catch(err){}
+}
+
+/* --- зум (если поддерживается) --- */
+function setupZoom(track){
+  const wrap=$('zoomWrap');
+  try{
+    const caps=track.getCapabilities?track.getCapabilities():{};
+    if(caps.zoom && caps.zoom.max>caps.zoom.min){
+      const z=$('zoomRange');
+      z.min=caps.zoom.min; z.max=caps.zoom.max; z.step=caps.zoom.step||0.1; z.value=caps.zoom.min;
+      wrap.classList.remove('hidden');
+      z.oninput=async()=>{ try{ await track.applyConstraints({advanced:[{zoom:parseFloat(z.value)}]}); }catch(e){} };
+    } else wrap.classList.add('hidden');
+  }catch(e){ wrap.classList.add('hidden'); }
+}
+
 async function toggleTorch(){
   const video=$('scanVideo'); const stream=video.srcObject;
-  if(!stream){ return; }
+  if(!stream) return;
   const track=stream.getVideoTracks()[0]; if(!track) return;
   try{
     const caps=track.getCapabilities?track.getCapabilities():{};
     if(caps.torch){
       torchOn=!torchOn;
       await track.applyConstraints({advanced:[{torch:torchOn}]});
-      $('torchBtn').classList.toggle('torch-on', torchOn);
+      $('torchBtn').classList.toggle('torch-on',torchOn);
     } else toast('Вспышка недоступна на этом устройстве','err');
   }catch(e){ toast('Вспышка не поддерживается','err'); }
 }
@@ -575,7 +591,7 @@ function handleDetected(code){
   setTimeout(()=>{
     closeScanner();
     if(idx>=0) openCard(idx,true); else showNotFound(code);
-  },400);
+  },350);
 }
 
 function closeScanner(){
@@ -583,64 +599,48 @@ function closeScanner(){
   if(zxingReader){ try{zxingReader.reset();}catch(e){} zxingReader=null; }
   if(mediaStream){ mediaStream.getTracks().forEach(t=>t.stop()); mediaStream=null; }
   const video=$('scanVideo'); if(video) video.srcObject=null;
+  $('zoomWrap').classList.add('hidden');
   $('scanOverlay').classList.add('hidden');
 }
 
 function setScanStatus(t){ $('scanStatus').textContent=t; }
 
-/* ============================================================
-   КАРТОЧКА
-============================================================ */
-function openCard(i, fromScan){
+/* ================= КАРТОЧКА ================= */
+function openCard(i,fromScan){
   currentIndex=i; cardReturnTab=fromScan?'scan':'db';
   const r=inventoryData[i];
   const color=statusColor(r.status);
-
   const box=$('cardBox');
-  box.style.borderLeftColor=color;
-  box.style.background=tint(color,0.07);
-
+  box.style.borderLeftColor=color; box.style.background=tint(color,0.07);
   $('cName').textContent=r.product_name||'(без названия)';
   $('cBarcode').textContent=getBarcode(r);
   $('cCode').textContent=r['КодФормы']||'—';
   $('cLocation').textContent=r.storage_location||'—';
-  const sb=$('cStatusBadge');
-  sb.textContent=r.status||'нет статуса';
-  sb.style.background=color;
+  const sb=$('cStatusBadge'); sb.textContent=r.status||'нет статуса'; sb.style.background=color;
   $('cNotes').textContent=r.notes||'—';
   $('customNote').value='';
-
   const badge=$('cardScannedBadge');
   if(r._scanned){ badge.textContent='✅ Проверено: '+r._scannedAt; badge.classList.remove('hidden'); }
   else badge.classList.add('hidden');
-
-  // показать большую отметку, если уже проверяли
-  if(r._scanned && r._lastNote){ showMarkedBanner(r._lastNote, r._scannedAt, r._lastType); }
+  if(r._scanned && r._lastNote){ showMarkedBanner(r._lastNote,r._scannedAt,r._lastType); }
   else $('markedBanner').classList.add('hidden');
-
   $('cardActions').classList.remove('hidden');
   $('cardMarked').classList.add('hidden');
   showView('card');
 }
 
-function showMarkedBanner(note, ts, type){
-  const b=$('markedBanner');
-  const isOk=(type==='ok');
+function showMarkedBanner(note,ts,type){
+  const b=$('markedBanner'); const isOk=(type==='ok');
   b.className='marked-banner '+(isOk?'ok':'issue');
   $('markedIcon').textContent=isOk?'✅':'⚠️';
   $('markedTitle').textContent=isOk?'ПРОВЕРЕНО':'НЕСООТВЕТСТВИЕ';
-  $('markedNote').textContent=note;
-  $('markedTime').textContent=ts;
+  $('markedNote').textContent=note; $('markedTime').textContent=ts;
   b.classList.remove('hidden');
 }
 
 function closeCard(){ showView(cardReturnTab); }
 
-function markCustom(){
-  const t=$('customNote').value.trim();
-  if(!t){ toast('Введите текст примечания','err'); return; }
-  markItem(t);
-}
+function markCustom(){ const t=$('customNote').value.trim(); if(!t){ toast('Введите текст примечания','err'); return; } markItem(t); }
 
 function markItem(noteText){
   if(currentIndex<0) return;
@@ -654,26 +654,20 @@ function markItem(noteText){
   sessionLog.unshift({i:currentIndex,t:ts,note:noteText,type:isOk?'ok':'issue'});
   if(sessionLog.length>300) sessionLog.pop();
   persist(); updateStats(); renderRecent();
-
   $('cardActions').classList.add('hidden');
   $('cardMarked').classList.remove('hidden');
-  showMarkedBanner(noteText, ts, isOk?'ok':'issue');
+  showMarkedBanner(noteText,ts,isOk?'ok':'issue');
   const badge=$('cardScannedBadge');
   badge.textContent='✅ Проверено: '+ts; badge.classList.remove('hidden');
   $('cNotes').textContent=r.notes;
-  toast(isOk?'Сохранено: форма на месте':'Сохранено: '+noteText, isOk?'ok':'info');
+  toast(isOk?'Сохранено: форма на месте':'Сохранено: '+noteText,isOk?'ok':'info');
 }
 
 function scanNext(){ showView('scan'); openScanner(); }
 
-/* ============================================================
-   НЕ НАЙДЕНО
-============================================================ */
+/* ================= НЕ НАЙДЕНО ================= */
 function showNotFound(code){
-  if(!notFoundLog.some(x=>x.code===code)){
-    notFoundLog.push({code, t:new Date().toLocaleString('ru-RU')});
-    persist();
-  }
+  if(!notFoundLog.some(x=>x.code===code)){ notFoundLog.push({code,t:new Date().toLocaleString('ru-RU')}); persist(); }
   $('nfCode').textContent=code;
   renderNF(); showView('notfound');
 }
@@ -685,14 +679,8 @@ function renderNF(){
   $('nfList').innerHTML=notFoundLog.map(x=>'<div>'+esc(x.code)+' <span style="opacity:.6;">· '+esc(x.t)+'</span></div>').join('');
 }
 
-/* ============================================================
-   ВКЛАДКА "БАЗА"
-============================================================ */
-function styleChips(){
-  document.querySelectorAll('#filterChips .chip').forEach(c=>{
-    c.classList.toggle('active', c.dataset.f===dbFilter);
-  });
-}
+/* ================= БАЗА ================= */
+function styleChips(){ document.querySelectorAll('#filterChips .chip').forEach(c=>c.classList.toggle('active',c.dataset.f===dbFilter)); }
 function passFilter(r){
   switch(dbFilter){
     case 'scanned': return !!r._scanned;
@@ -734,14 +722,12 @@ function renderDb(){
   if(filtered.length>dbShown){ more.classList.remove('hidden'); more.textContent='Показать ещё ('+(filtered.length-dbShown)+')'; }
   else more.classList.add('hidden');
 }
-document.addEventListener('click', e=>{
+document.addEventListener('click',e=>{
   const row=e.target.closest('.db-row'); if(row){ openCard(+row.dataset.i,false); return; }
   const rec=e.target.closest('[data-recent]'); if(rec){ openCard(+rec.dataset.i,false); }
 });
 
-/* ============================================================
-   СПИСКИ / СТАТИСТИКА
-============================================================ */
+/* ================= СТАТИСТИКА ================= */
 function updateStats(){
   const total=inventoryData.length;
   const done=inventoryData.filter(r=>r._scanned).length;
@@ -749,7 +735,6 @@ function updateStats(){
   $('statDone').textContent=done; $('statTotal').textContent=total;
   $('progressBar').style.width=total? (done/total*100).toFixed(1)+'%':'0%';
 }
-
 function renderRecent(){
   const el=$('recentList');
   if(!sessionLog.length){ el.innerHTML='<div class="muted small">Пока ничего не отсканировано</div>'; return; }
@@ -766,9 +751,7 @@ function renderRecent(){
   }).join('');
 }
 
-/* ============================================================
-   СБРОС / ЭКСПОРТ
-============================================================ */
+/* ================= СБРОС / ЭКСПОРТ ================= */
 function resetMarks(){
   if(!confirm('Сбросить все отметки этой сессии?')) return;
   inventoryData.forEach(r=>{ r.notes=r._baseNote; r['Дата проверки']=''; delete r._scanned; delete r._scannedAt; delete r._lastNote; delete r._lastType; });
@@ -784,16 +767,14 @@ function exportData(){
   if(!inventoryData.length){ toast('Нет данных для экспорта','err'); return; }
   const rows=inventoryData.map(r=>{ const c={}; for(const k of Object.keys(r)) if(!k.startsWith('_')) c[k]=r[k]; return c; });
   const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows),'Инвентаризация');
-  if(notFoundLog.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(notFoundLog.map(x=>({'Штрихкод':x.code,'Время':x.t}))),'Не найдены в базе');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),'Инвентаризация');
+  if(notFoundLog.length) XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(notFoundLog.map(x=>({'Штрихкод':x.code,'Время':x.t}))),'Не найдены в базе');
   const d=new Date(),p=n=>String(n).padStart(2,'0');
-  XLSX.writeFile(wb, 'Инвентаризация_'+d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'_'+p(d.getHours())+'-'+p(d.getMinutes())+'.xlsx');
+  XLSX.writeFile(wb,'Инвентаризация_'+d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'_'+p(d.getHours())+'-'+p(d.getMinutes())+'.xlsx');
   toast('Файл выгружен','ok');
 }
 
-/* ============================================================
-   ЗВУК / ВИБРАЦИЯ / ТОСТ
-============================================================ */
+/* ================= ЗВУК / ВИБРАЦИЯ / ТОСТ ================= */
 function beep(){
   try{ const ctx=new (window.AudioContext||window.webkitAudioContext)();
     const o=ctx.createOscillator(),g=ctx.createGain();
@@ -803,7 +784,6 @@ function beep(){
   }catch(e){}
 }
 function vib(){ if(navigator.vibrate) navigator.vibrate(180); }
-
 let toastTimer;
 function toast(msg,type){
   const t=$('toast');
@@ -814,14 +794,10 @@ function toast(msg,type){
 </script>
 
 <script>
-/* ============================================================
-   SERVICE WORKER — офлайн-режим
-============================================================ */
+/* SERVICE WORKER — офлайн-режим */
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('sw.js').then(reg=>{
-      console.log('SW зарегистрирован');
-    }).catch(e=>console.warn('SW ошибка',e));
+    navigator.serviceWorker.register('sw.js').then(()=>{}).catch(e=>console.warn('SW ошибка',e));
   });
 }
 </script>
