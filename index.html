@@ -33,8 +33,11 @@
   .hdr .sub{font-size:10px;opacity:.75;margin-top:2px;}
   .hdr-right{text-align:right;}
   #hdrStats{font-size:13px;font-weight:700;}
-  .pill{display:inline-block;font-size:10px;padding:2px 8px;border-radius:10px;margin-top:3px;font-weight:600;}
+  .hdr-tools{display:flex;gap:6px;align-items:center;justify-content:flex-end;margin-top:4px;}
+  .pill{display:inline-block;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;}
   .pill.online{background:#16a34a;} .pill.offline{background:#b45309;}
+  .export-mini{background:rgba(255,255,255,.22);color:#fff;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;}
+  .export-mini:active{transform:scale(.95);}
 
   main{max-width:560px;margin:0 auto;padding:14px;padding-bottom:90px;}
   section{animation:fadeIn .2s ease-out;}
@@ -56,6 +59,9 @@
   .btn-big{padding:20px;font-size:19px;border-radius:16px;box-shadow:0 4px 12px rgba(22,163,74,.35);}
   .pulse{animation:pulse 2s infinite;}
   @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(22,163,74,.5)}70%{box-shadow:0 0 0 18px rgba(22,163,74,0)}100%{box-shadow:0 0 0 0 rgba(22,163,74,0)}}
+
+  .eng-btn{padding:7px 12px;border-radius:10px;font-size:12px;font-weight:700;background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;}
+  .eng-btn.active{background:#2563eb;color:#fff;border-color:#2563eb;}
 
   .recent-row{display:flex;gap:10px;align-items:flex-start;background:#f9fafb;border-radius:10px;padding:9px;margin-bottom:6px;cursor:pointer;}
   .recent-row:active{background:#eff6ff;}
@@ -118,10 +124,13 @@
   .scan-body{flex:1;display:flex;align-items:center;justify-content:center;padding:0 12px;overflow:hidden;}
   .scan-frame{position:relative;width:100%;max-width:520px;}
   #scanVideo{width:100%;border-radius:16px;display:block;background:#111;}
-  .guide{position:absolute;left:5%;right:5%;top:18%;bottom:18%;border:2px solid rgba(74,222,128,.9);border-radius:14px;pointer-events:none;}
-  .laser{position:absolute;left:8%;right:8%;height:2px;background:#4ade80;box-shadow:0 0 10px 2px rgba(74,222,128,.8);animation:laser 1.5s ease-in-out infinite;pointer-events:none;}
+  #quaggaContainer{position:relative;width:100%;border-radius:16px;overflow:hidden;background:#111;}
+  #quaggaContainer video{width:100%;height:auto;display:block;border-radius:16px;}
+  #quaggaContainer canvas{position:absolute;top:0;left:0;width:100%;height:100%;border-radius:16px;}
+  .guide{position:absolute;left:5%;right:5%;top:18%;bottom:18%;border:2px solid rgba(74,222,128,.9);border-radius:14px;pointer-events:none;z-index:5;}
+  .laser{position:absolute;left:8%;right:8%;height:2px;background:#4ade80;box-shadow:0 0 10px 2px rgba(74,222,128,.8);animation:laser 1.5s ease-in-out infinite;pointer-events:none;z-index:6;}
   @keyframes laser{0%,100%{top:22%}50%{top:80%}}
-  .focus-dot{position:absolute;width:54px;height:54px;border:2px solid #4ade80;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;animation:focusFade .7s forwards;}
+  .focus-dot{position:absolute;width:54px;height:54px;border:2px solid #4ade80;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;animation:focusFade .7s forwards;z-index:7;}
   @keyframes focusFade{0%{opacity:1;transform:translate(-50%,-50%) scale(1.2)}100%{opacity:0;transform:translate(-50%,-50%) scale(.8)}}
   .scan-bottom{padding:14px;text-align:center;}
   #scanStatus{color:#4ade80;font-size:13px;font-weight:600;min-height:20px;margin-bottom:8px;}
@@ -152,7 +161,10 @@
     </div>
     <div class="hdr-right">
       <div id="hdrStats">—</div>
-      <span id="netPill" class="pill online">🌐 Онлайн</span>
+      <div class="hdr-tools">
+        <span id="netPill" class="pill online">🌐 Онлайн</span>
+        <button class="export-mini" onclick="exportData()">💾 Экспорт</button>
+      </div>
     </div>
   </div>
 </header>
@@ -173,7 +185,15 @@
     </div>
 
     <button id="bigScanBtn" class="btn btn-green btn-big pulse" onclick="openScanner()">📷 Сканировать код</button>
-    <p class="small muted" style="text-align:center;margin:8px 0 14px;">Поднесите этикетку ближе · при плохом свете включите фонарик</p>
+    <p class="small muted" style="text-align:center;margin:8px 0 10px;">Поднесите этикетку ближе · при плохом свете включите фонарик</p>
+
+    <button class="btn btn-blue" style="margin-bottom:12px;" onclick="exportData()">💾 Скачать результаты (Excel)</button>
+
+    <div class="card">
+      <div class="card-title">Движок сканирования</div>
+      <div id="engineRow" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+      <div class="small muted" style="margin-top:6px;">Если читает медленно — попробуйте другой движок и сравните.</div>
+    </div>
 
     <div class="card">
       <div class="card-title">База данных</div>
@@ -280,6 +300,7 @@
   <div class="scan-body">
     <div class="scan-frame">
       <video id="scanVideo" playsinline muted></video>
+      <div id="quaggaContainer" class="hidden"></div>
       <div class="guide"></div>
       <div class="laser"></div>
     </div>
@@ -298,11 +319,12 @@
 <div id="toast" class="hidden"></div>
 
 <script src="lib/xlsx.full.min.js"></script>
+<script src="lib/quagga.min.js"></script>
 <script src="lib/zxing.min.js"></script>
 
 <script>
 /* ================= ДАННЫЕ ================= */
-const LS_KEY='inventoryApp_v4';
+const LS_KEY='inventoryApp_v5';
 const DB_FILE='inventory.xlsx';
 let inventoryData=[], sessionLog=[], notFoundLog=[];
 let currentIndex=-1, cardReturnTab='scan';
@@ -317,7 +339,7 @@ const STATUS_COLORS={ 'В работе':'#16a34a','В ремонте':'#ea580c',
 function statusColor(s){ s=String(s||'').trim(); if(STATUS_COLORS[s]) return STATUS_COLORS[s]; if(s.includes('проверке')) return '#0284c7'; if(s.includes('консерв')) return '#2563eb'; return '#9ca3af'; }
 
 /* ================= СТАРТ ================= */
-window.addEventListener('DOMContentLoaded',()=>{ bootCheck(); bindUI(); tryRestore(); });
+window.addEventListener('DOMContentLoaded',()=>{ bootCheck(); bindUI(); buildEngineSelector(); tryRestore(); });
 
 function bindUI(){
   $('fileInput').addEventListener('change',onManualFile);
@@ -325,8 +347,15 @@ function bindUI(){
   document.querySelectorAll('#filterChips .chip').forEach(c=>{ c.onclick=()=>{ dbFilter=c.dataset.f; dbShown=150; styleChips(); renderDb(); }; });
   window.addEventListener('online',updateNetPill); window.addEventListener('offline',updateNetPill);
   updateNetPill();
-  // фокус по тапу на видео
-  $('scanVideo').addEventListener('click',tapFocus);
+  document.querySelector('.scan-frame').addEventListener('click',tapFocus);
+  // Quagga: регистрируем обработчик один раз
+  if(window.Quagga){
+    Quagga.onDetected(function(result){
+      if(!scanningActive || scanEngine!=='quagga') return;
+      const code=result.codeResult && result.codeResult.code;
+      if(code) handleDetected(code);
+    });
+  }
 }
 
 function updateNetPill(){ const p=$('netPill'); if(navigator.onLine){p.textContent='🌐 Онлайн';p.className='pill online';} else {p.textContent='📴 Офлайн';p.className='pill offline';} }
@@ -335,17 +364,43 @@ function bootCheck(){
   const bar=$('bootBar'), msg=$('bootMsg');
   bar.style.width='30%';
   let problems=[];
-  if(!window.XLSX) problems.push('модуль Excel (lib/xlsx.full.min.js)');
-  const hasNative='BarcodeDetector' in window;
-  if(!hasNative && !window.ZXing) problems.push('модуль сканера (lib/zxing.min.js)');
+  if(!window.XLSX) problems.push('Excel (lib/xlsx.full.min.js)');
+  const hasNative='BarcodeDetector' in window, hasQuagga=!!window.Quagga, hasZxing=!!window.ZXing;
+  if(!hasNative && !hasQuagga && !hasZxing) problems.push('сканер (lib/quagga.min.js)');
   bar.style.width='100%';
   if(problems.length){
     msg.innerHTML='⚠️ Не загружены: '+problems.join(', ')+'<br><br>Скачайте эти файлы в папку <b>lib/</b> и обновите страницу.';
   } else {
-    const mode=hasNative?'быстрый сканер ✅':'совместимый сканер';
-    msg.textContent='✅ Готов к работе ('+mode+'). Можно начинать.';
+    const avail=[];
+    if(hasNative) avail.push('нативный');
+    if(hasQuagga) avail.push('Quagga');
+    if(hasZxing) avail.push('ZXing');
+    msg.textContent='✅ Готов к работе. Доступные движки: '+avail.join(', ')+'.';
     setTimeout(()=>{ $('boot').classList.add('hidden'); },900);
   }
+}
+
+/* ================= ВЫБОР ДВИЖКА ================= */
+let preferredEngine='auto';
+let scanEngine=null;
+function chooseEngine(){
+  const hasNative='BarcodeDetector' in window, hasQuagga=!!window.Quagga, hasZxing=!!window.ZXing;
+  if(preferredEngine==='native' && hasNative) return 'native';
+  if(preferredEngine==='quagga' && hasQuagga) return 'quagga';
+  if(preferredEngine==='zxing' && hasZxing) return 'zxing';
+  if(hasNative) return 'native';
+  if(hasQuagga) return 'quagga';
+  if(hasZxing) return 'zxing';
+  return null;
+}
+function buildEngineSelector(){
+  const wrap=$('engineRow');
+  const opts=[['auto','Авто']];
+  if('BarcodeDetector' in window) opts.push(['native','Нативный']);
+  if(window.Quagga) opts.push(['quagga','Quagga']);
+  if(window.ZXing) opts.push(['zxing','ZXing']);
+  wrap.innerHTML=opts.map(([v,l])=>`<button class="eng-btn ${v===preferredEngine?'active':''}" data-eng="${v}">${l}</button>`).join('');
+  wrap.querySelectorAll('.eng-btn').forEach(b=>{ b.onclick=()=>{ preferredEngine=b.dataset.eng; buildEngineSelector(); }; });
 }
 
 function tryRestore(){
@@ -412,48 +467,60 @@ function showView(v){
 }
 
 /* ============================================================
-   СКАНЕР — оптимизированный
-   (низкое разрешение + детекция на уменьшенном кадре + автофокус)
+   СКАНЕР — 3 движка: нативный BarcodeDetector / Quagga2 / ZXing
 ============================================================ */
 const SCAN_FORMATS=['ean_13','ean_8','upc_a','upc_e','code_128','code_39','code_93','itf','codabar','data_matrix','qr_code'];
 let mediaStream=null, scanningActive=false, nativeDetector=null, zxingReader=null;
 let torchOn=false, lastCode='', lastTime=0;
 let detectCanvas=null, detectCtx=null;
-const DETECT_MAX_W=720;      // ширина кадра для анализа (меньше = быстрее)
-const DETECT_INTERVAL=45;    // мс между попытками распознавания
+const DETECT_MAX_W=720, DETECT_INTERVAL=45;
 
-function supportsNative(){ return 'BarcodeDetector' in window; }
+function getActiveVideoEl(){
+  if(scanEngine==='quagga') return document.querySelector('#quaggaContainer video');
+  return $('scanVideo');
+}
+function currentTrack(){
+  const v=getActiveVideoEl();
+  return v && v.srcObject ? v.srcObject.getVideoTracks()[0] : null;
+}
 
 async function openScanner(){
   if(!inventoryData.length){ toast('Сначала загрузите базу','err'); return; }
   $('scanOverlay').classList.remove('hidden');
   torchOn=false; $('torchBtn').classList.remove('torch-on');
+  $('zoomWrap').classList.add('hidden');
+  const engine=chooseEngine();
+  scanEngine=engine;
   setScanStatus('Запуск камеры…');
+  $('scanVideo').classList.toggle('hidden', engine==='quagga');
+  $('quaggaContainer').classList.toggle('hidden', engine!=='quagga');
 
-  if(supportsNative()){
+  if(engine==='native'){
     try{
       await startStream();
-      try{ nativeDetector=new BarcodeDetector({formats:SCAN_FORMATS}); }
-      catch(e){ nativeDetector=new BarcodeDetector(); }
+      try{ nativeDetector=new BarcodeDetector({formats:SCAN_FORMATS}); }catch(e){ nativeDetector=new BarcodeDetector(); }
       scanningActive=true;
-      setupZoom(mediaStream.getVideoTracks()[0]);
+      const t=currentTrack(); if(t) setupZoom(t);
       nativeLoop();
-      setScanStatus('Наведите камеру · быстрый режим');
-    }catch(err){
-      setScanStatus('Ошибка камеры: '+err.message);
-      toast('Нет доступа к камере','err');
-    }
-  } else if(window.ZXing){
+      setScanStatus('Наведите камеру · нативный движок');
+    }catch(err){ setScanStatus('Ошибка камеры: '+err.message); toast('Нет доступа к камере','err'); }
+  } else if(engine==='quagga'){
     scanningActive=true;
-    startZxing();
-    setScanStatus('Наведите камеру · совместимый режим');
+    startQuagga();
+  } else if(engine==='zxing'){
+    try{
+      await startStream();
+      scanningActive=true;
+      const t=currentTrack(); if(t) setupZoom(t);
+      startZxing();
+      setScanStatus('Наведите камеру · ZXing');
+    }catch(err){ setScanStatus('Ошибка камеры: '+err.message); toast('Нет доступа к камере','err'); }
   } else {
-    setScanStatus('Камера недоступна. Нужен HTTPS.');
+    setScanStatus('Нет доступного движка сканирования');
   }
 }
 
 async function startStream(){
-  // ВАЖНО: 1280x720 вместо 1920x1080 — убирает «слайдшоу» и улучшает автофокус
   const constraints={ audio:false, video:{
     facingMode:{ideal:'environment'},
     width:{ideal:1280}, height:{ideal:720},
@@ -463,7 +530,6 @@ async function startStream(){
   const video=$('scanVideo');
   video.srcObject=mediaStream;
   await video.play();
-  // непрерывный автофокус (если устройство поддерживает)
   try{
     const track=mediaStream.getVideoTracks()[0];
     const caps=track.getCapabilities?track.getCapabilities():{};
@@ -479,9 +545,6 @@ function ensureDetectCanvas(){
     detectCtx=detectCanvas.getContext('2d',{willReadFrequently:true});
   }
 }
-
-// Детекция отделена от отрисовки: анализируем уменьшенный кадр с интервалом,
-// поэтому превью не тормозит.
 function nativeLoop(){
   ensureDetectCanvas();
   const video=$('scanVideo');
@@ -504,6 +567,33 @@ function nativeLoop(){
   step();
 }
 
+function startQuagga(){
+  Quagga.init({
+    inputStream:{
+      name:'Live', type:'LiveStream', target:$('quaggaContainer'),
+      constraints:{ facingMode:'environment', width:{ideal:1280}, height:{ideal:720} }
+    },
+    locator:{ patchSize:'medium', halfSample:true },
+    numOfWorkers:2,
+    frequency:12,
+    decoder:{
+      readers:['ean_reader','ean_8_reader','upc_reader','upc_e_reader','code_128_reader','code_39_reader'],
+      multiple:false
+    },
+    locate:true
+  },function(err){
+    if(err){
+      scanningActive=false;
+      setScanStatus('Ошибка камеры/Quagga: '+(err.message||err));
+      toast('Не удалось запустить камеру','err');
+      return;
+    }
+    Quagga.start();
+    setScanStatus('Наведите камеру · Quagga');
+    setTimeout(()=>{ const t=currentTrack(); if(t) setupZoom(t); },600);
+  });
+}
+
 function startZxing(){
   const video=$('scanVideo');
   const hints=new Map();
@@ -520,37 +610,30 @@ function startZxing(){
   }catch(e){ setScanStatus('Ошибка сканера: '+e.message); }
 }
 
-/* --- фокус по тапу --- */
 async function tapFocus(e){
-  const video=$('scanVideo');
-  const rect=video.getBoundingClientRect();
-  const x=(e.clientX-rect.left)/rect.width;
-  const y=(e.clientY-rect.top)/rect.height;
-  // визуальный индикатор
   const frame=document.querySelector('.scan-frame');
+  const rect=frame.getBoundingClientRect();
   const dot=document.createElement('div');
   dot.className='focus-dot';
   dot.style.left=(e.clientX-rect.left)+'px';
   dot.style.top=(e.clientY-rect.top)+'px';
   frame.appendChild(dot);
   setTimeout(()=>dot.remove(),700);
-  // попытка сфокусироваться
-  const track=mediaStream?mediaStream.getVideoTracks()[0]:null;
+  const track=currentTrack();
   if(!track) return;
   try{
     const caps=track.getCapabilities?track.getCapabilities():{};
+    const x=(e.clientX-rect.left)/rect.width, y=(e.clientY-rect.top)/rect.height;
     const adv={};
     if(caps.pointsOfInterest) adv.pointsOfInterest=[{x,y}];
     if(caps.focusMode && Array.isArray(caps.focusMode) && caps.focusMode.includes('single-shot')) adv.focusMode='single-shot';
     if(Object.keys(adv).length) await track.applyConstraints({advanced:[adv]});
-    // вернуть непрерывный фокус
     if(caps.focusMode && Array.isArray(caps.focusMode) && caps.focusMode.includes('continuous')){
       setTimeout(()=>{ track.applyConstraints({advanced:[{focusMode:'continuous'}]}).catch(()=>{}); },900);
     }
   }catch(err){}
 }
 
-/* --- зум (если поддерживается) --- */
 function setupZoom(track){
   const wrap=$('zoomWrap');
   try{
@@ -565,9 +648,8 @@ function setupZoom(track){
 }
 
 async function toggleTorch(){
-  const video=$('scanVideo'); const stream=video.srcObject;
-  if(!stream) return;
-  const track=stream.getVideoTracks()[0]; if(!track) return;
+  const track=currentTrack();
+  if(!track){ return; }
   try{
     const caps=track.getCapabilities?track.getCapabilities():{};
     if(caps.torch){
@@ -596,9 +678,14 @@ function handleDetected(code){
 
 function closeScanner(){
   scanningActive=false;
-  if(zxingReader){ try{zxingReader.reset();}catch(e){} zxingReader=null; }
+  if(scanEngine==='quagga' && window.Quagga){
+    try{ Quagga.stop(); }catch(e){}
+    const qc=$('quaggaContainer'); if(qc) qc.innerHTML='';
+  }
+  if(scanEngine==='zxing' && zxingReader){ try{zxingReader.reset();}catch(e){} zxingReader=null; }
   if(mediaStream){ mediaStream.getTracks().forEach(t=>t.stop()); mediaStream=null; }
-  const video=$('scanVideo'); if(video) video.srcObject=null;
+  const v=$('scanVideo'); if(v) v.srcObject=null;
+  scanEngine=null;
   $('zoomWrap').classList.add('hidden');
   $('scanOverlay').classList.add('hidden');
 }
@@ -794,7 +881,6 @@ function toast(msg,type){
 </script>
 
 <script>
-/* SERVICE WORKER — офлайн-режим */
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('sw.js').then(()=>{}).catch(e=>console.warn('SW ошибка',e));

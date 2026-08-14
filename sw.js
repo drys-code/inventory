@@ -1,15 +1,15 @@
-const VERSION = 'v1';
+const VERSION = 'v2';
 const CACHE = 'inv-cache-' + VERSION;
 const PRECACHE = [
   './',
   './index.html',
   './manifest.json',
   './lib/xlsx.full.min.js',
+  './lib/quagga.min.js',
   './lib/zxing.min.js',
   './inventory.xlsx'
 ];
 
-// Установка: кэшируем все модули для офлайн-работы
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE).then(async cache => {
@@ -20,7 +20,6 @@ self.addEventListener('install', e => {
   );
 });
 
-// Активация: удаляем старые кэши
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys => Promise.all(
@@ -32,12 +31,8 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
   if (e.request.method !== 'GET' || url.origin !== location.origin) return;
-
   const isData = url.pathname.endsWith('inventory.xlsx');
   const isApp  = url.pathname.endsWith('index.html') || url.pathname.endsWith('/');
-
-  // База и страница: сначала сеть (чтобы получать обновления), при офлайн — кэш
-  // Библиотеки: сначала кэш (быстрее и надёжнее)
   if (isData || isApp) e.respondWith(networkFirst(e.request));
   else e.respondWith(cacheFirst(e.request));
 });
