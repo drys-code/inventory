@@ -2,653 +2,827 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#1d4ed8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#1e3a8a">
 <title>Инвентаризация пресс-форм</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<link rel="manifest" href="manifest.json">
 <style>
-  html,body{overscroll-behavior:none;}
-  body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;}
-  #reader{width:100%;}
-  #reader video{border-radius:16px;}
-  #reader__scan_region video{border-radius:16px;}
-  .no-scrollbar::-webkit-scrollbar{display:none}
-  .no-scrollbar{scrollbar-width:none}
-  .laser{animation:laser 1.5s ease-in-out infinite}
-  @keyframes laser{0%,100%{top:10%}50%{top:86%}}
-  .fade-up{animation:fadeUp .22s ease-out}
-  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-  .pulse-btn{animation:pulseBtn 2s infinite}
-  @keyframes pulseBtn{0%{box-shadow:0 0 0 0 rgba(34,197,94,.55)}70%{box-shadow:0 0 0 20px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
-  .tab-active{color:#2563eb;border-color:#2563eb;background:#eff6ff;}
+  :root{
+    --blue:#2563eb; --blue-d:#1e3a8a; --green:#16a34a; --green-d:#15803d;
+    --orange:#ea580c; --red:#dc2626; --gray:#6b7280; --bg:#f3f4f6;
+    --card:#ffffff; --border:#e5e7eb; --text:#1f2937; --muted:#6b7280;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;overscroll-behavior:none;}
+  body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);}
+  button{font-family:inherit;cursor:pointer;border:none;}
+  input{font-family:inherit;}
+  .hidden{display:none !important;}
+  .small{font-size:12px;} .muted{color:var(--muted);}
+
+  /* ===== Загрузочный экран ===== */
+  #boot{position:fixed;inset:0;background:var(--blue-d);z-index:100;display:flex;align-items:center;justify-content:center;color:#fff;}
+  .boot-box{text-align:center;padding:24px;max-width:320px;}
+  .boot-title{font-size:22px;font-weight:700;margin-bottom:12px;}
+  #bootMsg{font-size:14px;opacity:.9;min-height:40px;margin-bottom:16px;}
+  .boot-bar{height:6px;background:rgba(255,255,255,.2);border-radius:3px;overflow:hidden;}
+  #bootBar{height:100%;width:0;background:#4ade80;transition:width .3s;}
+
+  /* ===== Шапка ===== */
+  header{position:sticky;top:0;z-index:30;background:var(--blue-d);color:#fff;padding:10px 14px;box-shadow:0 2px 6px rgba(0,0,0,.15);}
+  .hdr{max-width:560px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:8px;}
+  .hdr h1{font-size:16px;margin:0;line-height:1.2;}
+  .hdr .sub{font-size:10px;opacity:.75;margin-top:2px;}
+  .hdr-right{text-align:right;}
+  #hdrStats{font-size:13px;font-weight:700;}
+  .pill{display:inline-block;font-size:10px;padding:2px 8px;border-radius:10px;margin-top:3px;font-weight:600;}
+  .pill.online{background:#16a34a;} .pill.offline{background:#b45309;}
+  .pill.ready{background:#065f46;}
+
+  main{max-width:560px;margin:0 auto;padding:14px;padding-bottom:90px;}
+  section{animation:fadeIn .2s ease-out;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  .card{background:var(--card);border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.08);}
+  .card-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+
+  /* ===== Прогресс ===== */
+  .progress-row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;}
+  .progress-bar{height:10px;background:var(--border);border-radius:5px;overflow:hidden;}
+  #progressBar{height:100%;background:var(--green);border-radius:5px;transition:width .3s;width:0;}
+
+  /* ===== Кнопки ===== */
+  .btn{display:block;width:100%;padding:13px;border-radius:12px;font-size:15px;font-weight:700;text-align:center;transition:transform .1s;}
+  .btn:active{transform:scale(.97);}
+  .btn-green{background:var(--green);color:#fff;}
+  .btn-green-d{background:var(--green-d);color:#fff;}
+  .btn-blue{background:var(--blue);color:#fff;}
+  .btn-gray{background:#e5e7eb;color:var(--text);}
+  .btn-red{background:#fee2e2;color:var(--red);}
+  .btn-big{padding:20px;font-size:19px;border-radius:16px;box-shadow:0 4px 12px rgba(22,163,74,.35);}
+  .pulse{animation:pulse 2s infinite;}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(22,163,74,.5)}70%{box-shadow:0 0 0 18px rgba(22,163,74,0)}100%{box-shadow:0 0 0 0 rgba(22,163,74,0)}}
+
+  /* ===== Недавно проверено ===== */
+  .recent-row{display:flex;gap:10px;align-items:flex-start;background:#f9fafb;border-radius:10px;padding:9px;margin-bottom:6px;cursor:pointer;}
+  .recent-row:active{background:#eff6ff;}
+  .mark{font-size:18px;line-height:1;}
+  .mark.ok{} .mark.issue{}
+  .recent-info{flex:1;min-width:0;}
+  .recent-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .recent-note{font-size:11px;color:var(--muted);margin-top:1px;}
+  .recent-note.issue-text{color:var(--orange);font-weight:600;}
+
+  /* ===== Список базы ===== */
+  #searchInput{width:100%;padding:12px;border:1px solid var(--border);border-radius:12px;font-size:14px;background:#fff;outline:none;}
+  #searchInput:focus{border-color:var(--blue);}
+  .chips{display:flex;gap:6px;overflow-x:auto;padding:8px 0;scrollbar-width:none;}
+  .chips::-webkit-scrollbar{display:none;}
+  .chip{white-space:nowrap;padding:6px 12px;border-radius:16px;font-size:12px;font-weight:600;background:#fff;border:1px solid var(--border);color:var(--muted);}
+  .chip.active{background:var(--blue);color:#fff;border-color:var(--blue);}
+  .db-row{background:#fff;border-radius:12px;padding:10px 12px;margin-bottom:8px;box-shadow:0 1px 2px rgba(0,0,0,.06);cursor:pointer;border-left:5px solid var(--gray);}
+  .db-row:active{background:#eff6ff;}
+  .db-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+  .db-name{font-size:13px;font-weight:600;line-height:1.3;}
+  .db-scanned{color:var(--green);font-weight:700;font-size:13px;}
+  .db-code{font-size:10px;color:var(--muted);font-family:monospace;margin-top:2px;}
+  .db-meta{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;align-items:center;}
+  .loc-badge{font-size:10px;font-weight:700;background:#eff6ff;color:var(--blue);padding:2px 8px;border-radius:8px;}
+  .st-badge{font-size:10px;font-weight:700;color:#fff;padding:2px 8px;border-radius:8px;}
+
+  /* ===== Карточка объекта ===== */
+  .item-card{border-radius:14px;padding:16px;margin-bottom:12px;border-left:8px solid var(--gray);background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.08);}
+  .item-name{font-size:18px;font-weight:700;line-height:1.3;margin-bottom:10px;}
+  .field{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.04);}
+  .field .k{color:var(--muted);} .field .v{font-weight:600;text-align:right;}
+  .field .v.mono{font-family:monospace;font-size:15px;}
+  .notes-box{margin-top:8px;font-size:12px;color:var(--muted);background:rgba(0,0,0,.03);padding:8px;border-radius:8px;}
+
+  /* Большая отметка о проверке */
+  .marked-banner{display:flex;gap:12px;align-items:center;border-radius:14px;padding:14px;margin-bottom:12px;color:#fff;animation:fadeIn .25s;}
+  .marked-banner.ok{background:var(--green);}
+  .marked-banner.issue{background:var(--orange);}
+  .marked-icon{font-size:34px;line-height:1;}
+  .marked-title{font-size:18px;font-weight:800;letter-spacing:.5px;}
+  .marked-note{font-size:13px;font-weight:600;margin-top:2px;}
+  .marked-time{font-size:11px;opacity:.85;margin-top:2px;}
+
+  .session-badge{display:inline-block;font-size:12px;font-weight:700;color:#fff;background:var(--green);padding:4px 10px;border-radius:10px;margin-bottom:8px;}
+
+  .quick-chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;}
+  .q-chip{background:#fff7ed;color:var(--orange);border:1px solid #fed7aa;padding:8px 10px;border-radius:10px;font-size:12px;font-weight:600;}
+  .custom-row{display:flex;gap:8px;margin-top:8px;}
+  .custom-row input{flex:1;padding:11px;border:1px solid var(--border);border-radius:10px;font-size:13px;outline:none;}
+
+  /* ===== Не найдено ===== */
+  .nf-box{background:#fef2f2;border-left:5px solid var(--red);border-radius:14px;padding:16px;margin-bottom:12px;}
+  .nf-code{font-family:monospace;font-size:20px;font-weight:700;background:#fff;border:1px solid #fecaca;padding:8px;border-radius:8px;margin:10px 0;}
+
+  /* ===== Нижняя навигация ===== */
+  nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);z-index:30;box-shadow:0 -2px 8px rgba(0,0,0,.08);}
+  .nav-inner{max-width:560px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;}
+  .nav-btn{padding:13px;font-size:13px;font-weight:700;color:var(--muted);background:none;border-top:3px solid transparent;}
+  .nav-btn.active{color:var(--blue);border-top-color:var(--blue);background:#eff6ff;}
+
+  /* ===== Оверлей сканера ===== */
+  #scanOverlay{position:fixed;inset:0;background:#000;z-index:50;display:flex;flex-direction:column;}
+  .scan-top{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;color:#fff;}
+  .scan-btn{background:rgba(255,255,255,.15);color:#fff;padding:8px 14px;border-radius:10px;font-size:13px;font-weight:700;}
+  .scan-btn.torch-on{background:#facc15;color:#000;}
+  .scan-body{flex:1;display:flex;align-items:center;justify-content:center;padding:0 12px;overflow:hidden;}
+  .scan-frame{position:relative;width:100%;max-width:520px;}
+  #scanVideo{width:100%;border-radius:16px;display:block;background:#111;}
+  .guide{position:absolute;left:5%;right:5%;top:18%;bottom:18%;border:2px solid rgba(74,222,128,.9);border-radius:14px;pointer-events:none;}
+  .laser{position:absolute;left:8%;right:8%;height:2px;background:#4ade80;box-shadow:0 0 10px 2px rgba(74,222,128,.8);animation:laser 1.5s ease-in-out infinite;pointer-events:none;}
+  @keyframes laser{0%,100%{top:22%}50%{top:80%}}
+  .scan-bottom{padding:14px;text-align:center;}
+  #scanStatus{color:#4ade80;font-size:13px;font-weight:600;min-height:20px;margin-bottom:10px;}
+  .scan-cancel{width:100%;max-width:300px;background:rgba(255,255,255,.15);color:#fff;padding:12px;border-radius:12px;font-weight:700;}
+
+  /* ===== Тост ===== */
+  #toast{position:fixed;top:60px;left:50%;transform:translateX(-50%);z-index:60;padding:11px 18px;border-radius:12px;font-size:13px;font-weight:700;color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.25);}
+  #toast.ok{background:var(--green);} #toast.err{background:var(--red);} #toast.info{background:#374151;}
 </style>
 </head>
-<body class="bg-gray-100 text-gray-800 min-h-screen">
+<body>
 
-<!-- ШАПКА -->
-<header class="bg-blue-700 text-white px-4 py-3 shadow sticky top-0 z-30">
-  <div class="max-w-lg mx-auto flex items-center justify-between">
+<!-- Загрузочный экран -->
+<div id="boot">
+  <div class="boot-box">
+    <div class="boot-title">📦 Инвентаризация</div>
+    <div id="bootMsg">Подготовка…</div>
+    <div class="boot-bar"><div id="bootBar"></div></div>
+  </div>
+</div>
+
+<header>
+  <div class="hdr">
     <div>
-      <h1 class="font-bold text-lg leading-tight">📦 Инвентаризация пресс-форм</h1>
-      <div class="text-[11px] opacity-80" id="srcLabel">Загрузка…</div>
+      <h1>📦 Инвентаризация пресс-форм</h1>
+      <div class="sub" id="srcLabel">Загрузка…</div>
     </div>
-    <div class="text-right">
-      <div class="font-bold text-sm" id="hdrStats">—</div>
-      <button onclick="exportData()" class="text-[11px] bg-white/20 hover:bg-white/30 rounded px-2 py-0.5 mt-0.5">💾 Экспорт</button>
+    <div class="hdr-right">
+      <div id="hdrStats">—</div>
+      <span id="netPill" class="pill online">🌐 Онлайн</span>
     </div>
   </div>
 </header>
 
-<main class="max-w-lg mx-auto p-4 pb-28">
-
-  <!-- ======== ВКЛАДКА: СКАНИРОВАНИЕ ======== -->
+<main>
+  <!-- ======== СКАНИРОВАНИЕ ======== -->
   <section id="view-scan">
-
-    <!-- Баннер восстановленной сессии -->
-    <div id="restoreBanner" class="hidden bg-amber-50 border border-amber-300 rounded-xl p-3 mb-4 text-sm fade-up">
-      💾 <b>Восстановлена прошлая сессия</b> (автосохранение).
-      <div class="flex gap-2 mt-2">
-        <button onclick="dismissBanner()" class="bg-amber-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold">Продолжить</button>
-        <button onclick="resetAll()" class="bg-white border border-amber-400 px-3 py-1.5 rounded-lg text-xs">Начать заново</button>
+    <div id="restoreBanner" class="card hidden" style="background:#fffbeb;border:1px solid #fcd34d;">
+      <div style="font-size:13px;">💾 <b>Восстановлена прошлая сессия</b> (автосохранение).</div>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button class="btn btn-blue" style="padding:8px;font-size:13px;" onclick="dismissBanner()">Продолжить</button>
+        <button class="btn btn-gray" style="padding:8px;font-size:13px;" onclick="resetAll()">Начать заново</button>
       </div>
     </div>
 
-    <!-- Прогресс -->
-    <div class="bg-white rounded-2xl shadow p-4 mb-4">
-      <div class="flex justify-between text-sm mb-1.5">
-        <span class="text-gray-500">Проверено</span>
-        <span class="font-bold"><span id="statDone">0</span> / <span id="statTotal">0</span></span>
-      </div>
-      <div class="h-2.5 bg-gray-200 rounded-full overflow-hidden">
-        <div id="progressBar" class="h-full bg-green-500 rounded-full transition-all" style="width:0%"></div>
-      </div>
+    <div class="card">
+      <div class="progress-row"><span class="muted">Проверено</span><b><span id="statDone">0</span> / <span id="statTotal">0</span></b></div>
+      <div class="progress-bar"><div id="progressBar"></div></div>
     </div>
 
-    <!-- ГЛАВНАЯ КНОПКА -->
-    <button onclick="openScanner()" id="bigScanBtn"
-      class="pulse-btn w-full bg-green-600 hover:bg-green-700 active:scale-95 transition text-white rounded-2xl py-6 text-xl font-bold shadow-lg mb-2">
-      📷 Сканировать код
-    </button>
-    <p class="text-[11px] text-gray-500 text-center mb-4">
-      Долго целиться не нужно — просто наведите камеру, чтобы этикетка попала в рамку
-    </p>
+    <button id="bigScanBtn" class="btn btn-green btn-big pulse" onclick="openScanner()">📷 Сканировать код</button>
+    <p class="small muted" style="text-align:center;margin:8px 0 14px;">Долго целиться не нужно — просто наведите камеру на этикетку</p>
 
-    <!-- Управление базой -->
-    <div class="bg-white rounded-2xl shadow p-4 mb-4">
-      <div class="text-xs font-bold text-gray-400 uppercase mb-2">База данных</div>
-      <div class="flex flex-col gap-2">
-        <button onclick="fileInput.click()" class="w-full bg-gray-100 hover:bg-gray-200 rounded-lg py-2.5 text-sm font-medium">📁 Загрузить файл с телефона (.xlsx)</button>
-        <button onclick="loadFromServer()" class="w-full bg-gray-100 hover:bg-gray-200 rounded-lg py-2.5 text-sm font-medium">🔄 Скачать актуальную с сервера</button>
-        <button onclick="resetMarks()" class="w-full bg-gray-100 hover:bg-gray-200 rounded-lg py-2.5 text-sm font-medium text-red-600">🗑 Сбросить отметки сессии</button>
-      </div>
+    <div class="card">
+      <div class="card-title">База данных</div>
+      <button class="btn btn-gray" style="margin-bottom:6px;font-size:13px;" onclick="document.getElementById('fileInput').click()">📁 Загрузить файл с телефона (.xlsx)</button>
+      <button class="btn btn-gray" style="margin-bottom:6px;font-size:13px;" onclick="loadFromServer()">🔄 Скачать актуальную с сервера</button>
+      <button class="btn btn-red" style="font-size:13px;" onclick="resetMarks()">🗑 Сбросить отметки сессии</button>
       <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" class="hidden">
     </div>
 
-    <!-- Не найденные -->
-    <div id="nfBlock" class="hidden bg-red-50 border border-red-200 rounded-2xl p-4 mb-4">
-      <div class="text-xs font-bold text-red-400 uppercase mb-1">⚠️ Не найдены в базе: <span id="nfCount">0</span></div>
-      <div id="nfList" class="text-xs font-mono text-red-700 space-y-0.5 max-h-24 overflow-y-auto"></div>
+    <div id="nfBlock" class="card hidden" style="background:#fef2f2;border:1px solid #fecaca;">
+      <div class="card-title" style="color:var(--red);">⚠️ Не найдены в базе: <span id="nfCount">0</span></div>
+      <div id="nfList" class="small" style="font-family:monospace;color:var(--red);max-height:90px;overflow-y:auto;"></div>
     </div>
 
-    <!-- Последние проверки -->
-    <div class="bg-white rounded-2xl shadow p-4">
-      <div class="text-xs font-bold text-gray-400 uppercase mb-2">Недавно проверено</div>
-      <div id="recentList" class="space-y-2 text-sm">
-        <div class="text-gray-400 text-xs">Пока ничего не отсканировано</div>
-      </div>
+    <div class="card">
+      <div class="card-title">Недавно проверено</div>
+      <div id="recentList"></div>
     </div>
   </section>
 
-  <!-- ======== ВКЛАДКА: БАЗА ======== -->
+  <!-- ======== БАЗА ======== -->
   <section id="view-db" class="hidden">
-    <div class="relative mb-3">
-      <input id="searchInput" type="search" placeholder="🔍 Поиск: штрихкод, название, код, место…"
-        class="w-full bg-white border border-gray-300 rounded-xl p-3 text-sm shadow-sm focus:ring-2 focus:ring-blue-500 outline-none">
+    <input id="searchInput" type="search" placeholder="🔍 Поиск: штрихкод, название, код, место…">
+    <div class="chips" id="filterChips">
+      <button class="chip active" data-f="all">Все</button>
+      <button class="chip" data-f="scanned">✅ Проверено</button>
+      <button class="chip" data-f="notscanned">Не проверено</button>
+      <button class="chip" data-f="В работе">В работе</button>
+      <button class="chip" data-f="В ремонте">В ремонте</button>
+      <button class="chip" data-f="Списана">Списана</button>
+      <button class="chip" data-f="other">Прочее</button>
     </div>
-    <div id="filterChips" class="flex gap-2 overflow-x-auto no-scrollbar mb-3 pb-1">
-      <button data-f="all" class="chip whitespace-nowrap">Все</button>
-      <button data-f="scanned" class="chip whitespace-nowrap">✅ Проверено</button>
-      <button data-f="notscanned" class="chip whitespace-nowrap">Не проверено</button>
-      <button data-f="В работе" class="chip whitespace-nowrap">В работе</button>
-      <button data-f="В ремонте" class="chip whitespace-nowrap">В ремонте</button>
-      <button data-f="Списана" class="chip whitespace-nowrap">Списана</button>
-      <button data-f="other" class="chip whitespace-nowrap">Прочее</button>
-    </div>
-    <div class="text-xs text-gray-500 mb-2" id="dbCount"></div>
-    <div id="dbList" class="space-y-2"></div>
-    <button id="moreBtn" onclick="dbShown+=150;renderDb()" class="hidden w-full mt-3 bg-white border border-gray-300 rounded-xl py-2.5 text-sm font-medium">Показать ещё</button>
+    <div class="small muted" id="dbCount" style="margin-bottom:8px;"></div>
+    <div id="dbList"></div>
+    <button id="moreBtn" class="btn btn-gray hidden" onclick="dbShown+=150;renderDb()">Показать ещё</button>
   </section>
 
-  <!-- ======== КАРТОЧКА ОБЪЕКТА ======== -->
-  <section id="view-card" class="hidden fade-up">
-    <button onclick="closeCard()" class="mb-3 text-sm font-medium text-blue-700">← Назад</button>
+  <!-- ======== КАРТОЧКА ======== -->
+  <section id="view-card" class="hidden">
+    <button class="btn btn-gray" style="width:auto;display:inline-block;padding:8px 14px;font-size:13px;margin-bottom:10px;" onclick="closeCard()">← Назад</button>
 
-    <div class="bg-white rounded-2xl shadow p-4 mb-4">
-      <div id="cardScannedBadge" class="hidden bg-green-100 text-green-700 text-xs font-bold rounded-lg px-2 py-1 mb-2 inline-block"></div>
-      <h2 id="cName" class="text-lg font-bold leading-snug"></h2>
-      <div class="mt-3 space-y-2 text-sm">
-        <div class="flex justify-between gap-2"><span class="text-gray-400">Штрихкод</span><span id="cBarcode" class="font-mono font-bold"></span></div>
-        <div class="flex justify-between gap-2"><span class="text-gray-400">Код формы</span><span id="cCode" class="font-medium"></span></div>
-        <div class="flex justify-between gap-2"><span class="text-gray-400">Место хранения</span><span id="cLocation" class="font-bold text-blue-700"></span></div>
-        <div class="flex justify-between gap-2 items-center"><span class="text-gray-400">Статус</span><span id="cStatus"></span></div>
-        <div class="pt-2 border-t"><span class="text-gray-400 text-xs">Примечание</span><div id="cNotes" class="text-gray-700 mt-0.5"></div></div>
+    <!-- Большая отметка о проверке -->
+    <div id="markedBanner" class="marked-banner hidden">
+      <div class="marked-icon" id="markedIcon">✅</div>
+      <div>
+        <div class="marked-title" id="markedTitle">ПРОВЕРЕНО</div>
+        <div class="marked-note" id="markedNote"></div>
+        <div class="marked-time" id="markedTime"></div>
       </div>
     </div>
 
-    <!-- Действия -->
+    <div class="item-card" id="cardBox">
+      <div id="cardScannedBadge" class="session-badge hidden"></div>
+      <div class="item-name" id="cName"></div>
+      <div class="field"><span class="k">Штрихкод</span><span class="v mono" id="cBarcode"></span></div>
+      <div class="field"><span class="k">Код формы</span><span class="v" id="cCode"></span></div>
+      <div class="field"><span class="k">Место хранения</span><span class="v" id="cLocation" style="color:var(--blue);"></span></div>
+      <div class="field"><span class="k">Статус</span><span class="v"><span class="st-badge" id="cStatusBadge"></span></span></div>
+      <div class="notes-box">Примечание: <span id="cNotes"></span></div>
+    </div>
+
     <div id="cardActions">
-      <button onclick="markItem('Инвентаризация пройдена')" class="w-full bg-green-600 hover:bg-green-700 active:scale-95 transition text-white py-4 rounded-xl text-lg font-bold shadow mb-4">✅ Форма на месте</button>
-      <div class="text-xs font-bold text-gray-400 uppercase mb-2">Если есть несоответствие:</div>
-      <div class="flex flex-wrap gap-2 mb-3">
-        <button onclick="markItem('Повреждена')" class="bg-orange-100 text-orange-700 px-3 py-2 rounded-lg text-sm font-medium">⚠️ Повреждена</button>
-        <button onclick="markItem('Не соответствует месту')" class="bg-orange-100 text-orange-700 px-3 py-2 rounded-lg text-sm font-medium">📍 Не на своём месте</button>
-        <button onclick="markItem('Этикетка не читается')" class="bg-orange-100 text-orange-700 px-3 py-2 rounded-lg text-sm font-medium">🏷 Этикетка не читается</button>
-        <button onclick="markItem('Требуется ремонт')" class="bg-orange-100 text-orange-700 px-3 py-2 rounded-lg text-sm font-medium">🔧 Требуется ремонт</button>
+      <button class="btn btn-green btn-big" onclick="markItem('Инвентаризация пройдена')">✅ Форма на месте</button>
+      <div class="card-title" style="margin-top:14px;">Если есть несоответствие:</div>
+      <div class="quick-chips">
+        <button class="q-chip" onclick="markItem('Повреждена')">⚠️ Повреждена</button>
+        <button class="q-chip" onclick="markItem('Не соответствует месту')">📍 Не на своём месте</button>
+        <button class="q-chip" onclick="markItem('Этикетка не читается')">🏷 Этикетка не читается</button>
+        <button class="q-chip" onclick="markItem('Требуется ремонт')">🔧 Требуется ремонт</button>
       </div>
-      <div class="flex gap-2">
-        <input id="customNote" type="text" placeholder="Своё примечание…" class="flex-grow bg-white border border-gray-300 rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-blue-500">
-        <button onclick="markCustom()" class="bg-blue-600 text-white px-4 rounded-xl font-bold">OK</button>
+      <div class="custom-row">
+        <input id="customNote" type="text" placeholder="Своё примечание…">
+        <button class="btn btn-blue" style="width:auto;padding:0 18px;" onclick="markCustom()">OK</button>
       </div>
     </div>
 
-    <!-- После отметки -->
     <div id="cardMarked" class="hidden">
-      <div class="bg-green-50 border border-green-300 rounded-xl p-3 text-sm text-green-800 mb-3" id="markedInfo"></div>
-      <button onclick="scanNext()" class="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-xl text-lg font-bold shadow mb-2">📷 Сканировать следующий</button>
-      <button onclick="closeCard()" class="w-full bg-gray-200 hover:bg-gray-300 py-2.5 rounded-xl text-sm">Готово</button>
+      <button class="btn btn-green btn-big" onclick="scanNext()">📷 Сканировать следующий</button>
+      <button class="btn btn-gray" style="margin-top:8px;" onclick="closeCard()">Готово</button>
     </div>
   </section>
 
   <!-- ======== НЕ НАЙДЕНО ======== -->
-  <section id="view-notfound" class="hidden fade-up">
-    <div class="bg-red-50 border-l-4 border-red-500 rounded-2xl p-4 mb-4">
-      <h3 class="font-bold text-red-700 mb-1">⚠️ Штрихкод не найден в базе</h3>
-      <div id="nfCode" class="font-mono text-lg font-bold my-2 bg-white rounded-lg p-2 border border-red-200"></div>
-      <p class="text-xs text-gray-600">Код записан в список «не найденные» — он попадёт в итоговый файл экспорта (отдельный лист).</p>
+  <section id="view-notfound" class="hidden">
+    <div class="nf-box">
+      <h3 style="margin:0;color:var(--red);">⚠️ Штрихкод не найден в базе</h3>
+      <div class="nf-code" id="nfCode"></div>
+      <p class="small muted" style="margin:0;">Код записан в список «не найденные» — он попадёт в итоговый файл экспорта отдельным листом.</p>
     </div>
-    <button onclick="scanNext()" class="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-xl text-lg font-bold shadow mb-2">📷 Сканировать следующий</button>
-    <button onclick="showView('scan')" class="w-full bg-gray-200 hover:bg-gray-300 py-2.5 rounded-xl text-sm">Готово</button>
+    <button class="btn btn-green btn-big" onclick="scanNext()">📷 Сканировать следующий</button>
+    <button class="btn btn-gray" style="margin-top:8px;" onclick="showView('scan')">Готово</button>
   </section>
-
 </main>
 
-<!-- НИЖНЯЯ НАВИГАЦИЯ -->
-<nav class="fixed bottom-0 left-0 right-0 bg-white border-t shadow-2xl z-30">
-  <div class="max-w-lg mx-auto grid grid-cols-2">
-    <button id="navScan" onclick="showView('scan')" class="py-3 text-sm font-bold border-t-2 border-transparent text-gray-500">📷 Сканирование</button>
-    <button id="navDb" onclick="showView('db')" class="py-3 text-sm font-bold border-t-2 border-transparent text-gray-500">📋 База</button>
+<nav>
+  <div class="nav-inner">
+    <button id="navScan" class="nav-btn active" onclick="showView('scan')">📷 Сканирование</button>
+    <button id="navDb" class="nav-btn" onclick="showView('db')">📋 База</button>
   </div>
 </nav>
 
-<!-- ОВЕРЛЕЙ СКАНЕРА -->
-<div id="overlay" class="fixed inset-0 z-50 bg-black hidden flex-col">
-  <div class="flex items-center justify-between p-3 text-white">
-    <button onclick="closeScanner()" class="bg-white/15 hover:bg-white/25 rounded-lg px-3 py-2 text-sm font-bold">✕ Закрыть</button>
-    <div class="text-xs opacity-80">Наведите камеру на этикетку</div>
-    <button id="torchBtn" onclick="toggleTorch()" class="bg-white/15 hover:bg-white/25 rounded-lg px-3 py-2 text-sm">🔦</button>
+<!-- Оверлей сканера -->
+<div id="scanOverlay" class="hidden">
+  <div class="scan-top">
+    <button class="scan-btn" onclick="closeScanner()">✕ Закрыть</button>
+    <button id="torchBtn" class="scan-btn" onclick="toggleTorch()">🔦 Фонарик</button>
   </div>
-  <div class="flex-1 flex items-center justify-center px-3 overflow-hidden">
-    <div class="relative w-full max-w-xl">
-      <div id="reader"></div>
-      <div class="absolute inset-0 pointer-events-none">
-        <div class="absolute left-2 right-2 border-2 border-green-400/80 rounded-xl" style="top:15%;bottom:15%"></div>
-        <div class="laser absolute left-4 right-4 h-0.5 bg-green-400 shadow-[0_0_8px_2px_rgba(74,222,128,0.8)]"></div>
-      </div>
+  <div class="scan-body">
+    <div class="scan-frame">
+      <video id="scanVideo" playsinline muted></video>
+      <div class="guide"></div>
+      <div class="laser"></div>
     </div>
   </div>
-  <div class="p-4 text-center">
-    <div id="scanStatus" class="text-green-400 text-sm mb-3 h-5 font-medium"></div>
-    <button onclick="closeScanner()" class="w-full max-w-xs bg-white/15 text-white py-3 rounded-xl font-bold">Отмена</button>
+  <div class="scan-bottom">
+    <div id="scanStatus"></div>
+    <button class="scan-cancel" onclick="closeScanner()">Отмена</button>
   </div>
 </div>
 
-<!-- ТОСТ -->
-<div id="toast" class="fixed top-16 left-1/2 -translate-x-1/2 z-[60] hidden px-4 py-2.5 rounded-xl text-sm font-bold shadow-lg"></div>
+<div id="toast" class="hidden"></div>
+
+<!-- ЛОКАЛЬНЫЕ БИБЛИОТЕКИ (должны лежать в папке lib/) -->
+<script src="lib/xlsx.full.min.js"></script>
+<script src="lib/zxing.min.js"></script>
 
 <script>
-/* ================== ДАННЫЕ ================== */
-const LS_KEY = 'inventoryApp_v3';
+/* ============================================================
+   ДАННЫЕ
+============================================================ */
+const LS_KEY = 'inventoryApp_v4';
+const DB_FILE = 'inventory.xlsx';
 let inventoryData = [];
-let sessionLog = [];      // [{i, t, note}]
-let notFoundLog = [];     // [{code, t}]
-let html5Qr = null;
-let handling = false;
-let torchOn = false;
+let sessionLog = [];
+let notFoundLog = [];
 let currentIndex = -1;
 let cardReturnTab = 'scan';
 let dbFilter = 'all';
 let dbShown = 150;
 
 const $ = id => document.getElementById(id);
-
 function getBarcode(r){ return String(r.barcode ?? r['Штрихкод'] ?? '').trim(); }
 function esc(s){ return String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function tint(hex, a){
+  const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
 
-/* ================== СТАРТ ================== */
+/* Цвета статусов */
+const STATUS_COLORS = {
+  'В работе':'#16a34a','В ремонте':'#ea580c','Списана':'#6b7280',
+  'На консервации':'#2563eb','Производство остановлено':'#7c3aed','Производство в литье':'#0891b2'
+};
+function statusColor(s){
+  s = String(s||'').trim();
+  if (STATUS_COLORS[s]) return STATUS_COLORS[s];
+  if (s.includes('проверке')) return '#0284c7';
+  if (s.includes('консерв')) return '#2563eb';
+  return '#9ca3af';
+}
+
+/* ============================================================
+   ЗАГРУЗКА / АВТОСОХРАНЕНИЕ
+============================================================ */
 window.addEventListener('DOMContentLoaded', () => {
-  styleChips();
-  $('fileInput').addEventListener('change', onManualFile);
-  $('searchInput').addEventListener('input', () => { clearTimeout(st); dbShown = 150; var st = setTimeout(renderDb, 120); });
-  document.querySelectorAll('#filterChips .chip').forEach(c => c.onclick = () => { dbFilter = c.dataset.f; dbShown = 150; styleChips(); renderDb(); });
+  bootCheck();
+  bindUI();
   tryRestore();
 });
 
-function tryRestore(){
-  try {
-    const saved = JSON.parse(localStorage.getItem(LS_KEY));
-    if (saved && Array.isArray(saved.data) && saved.data.length) {
-      inventoryData = saved.data;
-      sessionLog = saved.log || [];
-      notFoundLog = saved.nf || [];
-      setSource('💾 Автосохранение (сессия восстановлена)');
-      $('restoreBanner').classList.remove('hidden');
-      afterDataReady();
-      return;
-    }
-  } catch(e){}
-  loadFromServer();
+function bindUI(){
+  $('fileInput').addEventListener('change', onManualFile);
+  $('searchInput').addEventListener('input', () => { clearTimeout(window._st); dbShown=150; window._st=setTimeout(renderDb,120); });
+  document.querySelectorAll('#filterChips .chip').forEach(c => {
+    c.onclick = () => { dbFilter=c.dataset.f; dbShown=150; styleChips(); renderDb(); };
+  });
+  window.addEventListener('online', updateNetPill);
+  window.addEventListener('offline', updateNetPill);
+  updateNetPill();
 }
 
-function dismissBanner(){ $('restoreBanner').classList.add('hidden'); }
+function updateNetPill(){
+  const p=$('netPill');
+  if(navigator.onLine){ p.textContent='🌐 Онлайн'; p.className='pill online'; }
+  else{ p.textContent='📴 Офлайн'; p.className='pill offline'; }
+}
 
-/* ================== ЗАГРУЗКА БАЗЫ ================== */
+function bootCheck(){
+  const bar=$('bootBar'); const msg=$('bootMsg');
+  bar.style.width='30%';
+  let problems=[];
+  if(!window.XLSX) problems.push('модуль Excel (lib/xlsx.full.min.js)');
+  const hasNative='BarcodeDetector' in window;
+  if(!hasNative && !window.ZXing) problems.push('модуль сканера (lib/zxing.min.js)');
+
+  bar.style.width='100%';
+  if(problems.length){
+    msg.innerHTML='⚠️ Не загружены: '+problems.join(', ')+
+      '<br><br>Скачайте эти файлы в папку <b>lib/</b> рядом с index.html (см. инструкцию) и обновите страницу.';
+  } else {
+    const mode = hasNative ? 'быстрый сканер ✅' : 'совместимый сканер';
+    msg.textContent='✅ Готов к работе ('+mode+'). Можно начинать инвентаризацию.';
+    setTimeout(()=>{ $('boot').classList.add('hidden'); }, 900);
+  }
+}
+
+function tryRestore(){
+  try{
+    const saved=JSON.parse(localStorage.getItem(LS_KEY));
+    if(saved && Array.isArray(saved.data) && saved.data.length){
+      inventoryData=saved.data; sessionLog=saved.log||[]; notFoundLog=saved.nf||[];
+      setSource('💾 Автосохранение (сессия восстановлена)');
+      $('restoreBanner').classList.remove('hidden');
+      afterDataReady(); return;
+    }
+  }catch(e){}
+  loadFromServer();
+}
+function dismissBanner(){ $('restoreBanner').classList.add('hidden'); }
+function setSource(t){ $('srcLabel').textContent=t; }
+
 async function loadFromServer(){
-  setSource('⏳ Загрузка с сервера…');
-  try {
-    const res = await fetch('inventory.xlsx?t=' + Date.now());
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    processWorkbook(await res.arrayBuffer(), '🌐 Файл с сервера: inventory.xlsx');
-  } catch(e) {
-    setSource('⚠️ Файл inventory.xlsx не найден рядом со страницей');
-    toast('Файл не найден на сервере. Загрузите его с телефона кнопкой ниже.', 'error');
+  setSource('⏳ Загрузка базы с сервера…');
+  try{
+    const res=await fetch(DB_FILE+'?t='+Date.now(), {cache:'no-store'});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    processWorkbook(await res.arrayBuffer(), '🌐 Файл с сервера: '+DB_FILE);
+  }catch(e){
+    setSource('⚠️ Файл '+DB_FILE+' не найден рядом со страницей');
+    toast('База не найдена. Загрузите файл с телефона.','err');
   }
 }
 
 function onManualFile(e){
-  const file = e.target.files[0];
-  if (!file) return;
-  const done = inventoryData.filter(r => r._scanned).length;
-  if (done > 0 && !confirm(`В базе уже есть ${done} отметок. Загрузка нового файла их сбросит. Продолжить?`)) { e.target.value=''; return; }
-  const reader = new FileReader();
-  reader.onload = ev => { try { processWorkbook(ev.target.result, '📱 Файл с телефона: ' + file.name); } catch(err){ toast('Ошибка чтения: ' + err.message, 'error'); } };
-  reader.readAsArrayBuffer(file);
-  e.target.value = '';
+  const file=e.target.files[0]; if(!file) return;
+  const done=inventoryData.filter(r=>r._scanned).length;
+  if(done>0 && !confirm('В базе уже есть '+done+' отметок. Загрузка нового файла их сбросит. Продолжить?')){ e.target.value=''; return; }
+  const reader=new FileReader();
+  reader.onload=ev=>{ try{ processWorkbook(ev.target.result,'📱 Файл с телефона: '+file.name); }catch(err){ toast('Ошибка чтения: '+err.message,'err'); } };
+  reader.readAsArrayBuffer(file); e.target.value='';
 }
 
 function processWorkbook(buf, sourceLabel){
-  const wb = XLSX.read(new Uint8Array(buf), {type:'array'});
-  let rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {defval:'', raw:false});
-  // убираем повторяющиеся строки-заголовки из склеенных таблиц
-  rows = rows.filter(r => {
-    const b = getBarcode(r).toLowerCase();
-    return b && b !== 'barcode' && b !== 'штрихкод';
+  const wb=XLSX.read(new Uint8Array(buf),{type:'array'});
+  let rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:'',raw:false});
+  rows=rows.filter(r=>{ const b=getBarcode(r).toLowerCase(); return b && b!=='barcode' && b!=='штрихкод'; });
+  rows.forEach(r=>{
+    if(r.notes===undefined && r['Примечание']!==undefined){ r.notes=r['Примечание']; delete r['Примечание']; }
+    r._baseNote=String(r.notes||'');
+    r['Дата проверки']='';
   });
-  rows.forEach(r => {
-    if (r.notes === undefined && r['Примечание'] !== undefined) { r.notes = r['Примечание']; delete r['Примечание']; }
-    r._baseNote = String(r.notes || '');
-    r['Дата проверки'] = '';
-  });
-  inventoryData = rows;
-  sessionLog = [];
-  notFoundLog = [];
-  setSource(sourceLabel + ` · позиций: ${rows.length}`);
-  persist();
-  afterDataReady();
-  toast('База загружена: ' + rows.length + ' позиций', 'success');
+  inventoryData=rows; sessionLog=[]; notFoundLog=[];
+  setSource(sourceLabel+' · позиций: '+rows.length);
+  persist(); afterDataReady();
+  toast('База загружена: '+rows.length+' позиций','ok');
 }
 
-function afterDataReady(){
-  updateStats();
-  renderRecent();
-  renderNF();
-}
+function afterDataReady(){ updateStats(); renderRecent(); renderNF(); }
+function persist(){ try{ localStorage.setItem(LS_KEY, JSON.stringify({data:inventoryData,log:sessionLog,nf:notFoundLog})); }catch(e){} }
 
-function setSource(t){ $('srcLabel').textContent = t; }
-
-function persist(){
-  try { localStorage.setItem(LS_KEY, JSON.stringify({data: inventoryData, log: sessionLog, nf: notFoundLog})); } catch(e){}
-}
-
-/* ================== НАВИГАЦИЯ ================== */
+/* ============================================================
+   НАВИГАЦИЯ
+============================================================ */
 function showView(v){
-  ['scan','db','card','notfound'].forEach(x => $('view-'+x).classList.toggle('hidden', x !== v));
-  $('navScan').classList.toggle('tab-active', v==='scan');
-  $('navDb').classList.toggle('tab-active', v==='db');
-  if (v === 'db') renderDb();
+  ['scan','db','card','notfound'].forEach(x=>$('view-'+x).classList.toggle('hidden', x!==v));
+  $('navScan').classList.toggle('active', v==='scan');
+  $('navDb').classList.toggle('active', v==='db');
+  if(v==='db') renderDb();
   window.scrollTo(0,0);
 }
 
-/* ================== СКАНЕР ================== */
-function openScanner(){
-  if (!inventoryData.length) { toast('Сначала загрузите базу данных', 'error'); return; }
-  const ov = $('overlay');
-  ov.classList.remove('hidden'); ov.classList.add('flex');
-  $('scanStatus').textContent = 'Запуск камеры…';
-  torchOn = false; $('torchBtn').classList.remove('bg-yellow-400');
-  setTimeout(startCamera, 80); // дать оверлею отрисоваться
-}
+/* ============================================================
+   СКАНЕР (BarcodeDetector + ZXing fallback)
+============================================================ */
+const SCAN_FORMATS=['ean_13','ean_8','upc_a','upc_e','code_128','code_39','code_93','itf','codabar','data_matrix','qr_code'];
+let mediaStream=null, scanningActive=false, nativeDetector=null, zxingReader=null;
+let torchOn=false, lastCode='', lastTime=0;
 
-function startCamera(){
-  if (!html5Qr) {
-    html5Qr = new Html5Qrcode('reader', {
-      // только нужные форматы = быстрее распознавание
-      formatsToSupport: [
-        Html5QrcodeSupportedFormats.EAN_13,
-        Html5QrcodeSupportedFormats.EAN_8,
-        Html5QrcodeSupportedFormats.UPC_A,
-        Html5QrcodeSupportedFormats.UPC_E,
-        Html5QrcodeSupportedFormats.CODE_128,
-        Html5QrcodeSupportedFormats.CODE_39,
-        Html5QrcodeSupportedFormats.CODE_93,
-        Html5QrcodeSupportedFormats.ITF,
-        Html5QrcodeSupportedFormats.DATA_MATRIX,
-        Html5QrcodeSupportedFormats.QR_CODE
-      ],
-      experimentalFeatures: { useBarCodeDetectorIfSupported: true }, // нативный быстрый движок
-      rememberLastUsedCamera: true
-    });
-  }
-  const config = {
-    fps: 12,
-    disableFlip: true,
-    // широкая зона наведения под горизонтальные штрихкоды
-    qrbox: (w, h) => {
-      const width = Math.floor(Math.min(w, 640) * 0.9);
-      return { width, height: Math.floor(width * 0.42) };
-    },
-    videoConstraints: {
-      facingMode: { ideal: 'environment' },
-      width: { ideal: 1920 }, height: { ideal: 1080 }
+function supportsNative(){ return 'BarcodeDetector' in window; }
+
+async function openScanner(){
+  if(!inventoryData.length){ toast('Сначала загрузите базу','err'); return; }
+  $('scanOverlay').classList.remove('hidden');
+  torchOn=false; $('torchBtn').classList.remove('torch-on');
+  setScanStatus('Запуск камеры…');
+
+  if(supportsNative()){
+    try{
+      await startStream();
+      try{ nativeDetector=new BarcodeDetector({formats:SCAN_FORMATS}); }
+      catch(e){ nativeDetector=new BarcodeDetector(); }
+      scanningActive=true;
+      nativeLoop();
+      setScanStatus('Наведите камеру на штрихкод (быстрый режим)');
+    }catch(err){
+      setScanStatus('Ошибка камеры: '+err.message);
+      toast('Нет доступа к камере','err');
     }
-  };
-  html5Qr.start({ facingMode: 'environment' }, config, onScanSuccess, () => {})
-    .then(() => { $('scanStatus').textContent = 'Ищу штрихкод…'; })
-    .catch(err => {
-      $('scanStatus').textContent = '';
-      toast('Камера недоступна. Разрешите доступ в настройках браузера.', 'error');
-      closeScanner();
-    });
-}
-
-function stopCamera(){
-  if (html5Qr) {
-    try { return html5Qr.stop().then(() => html5Qr.clear()).catch(()=>{}); } catch(e){}
+  } else if(window.ZXing){
+    scanningActive=true;
+    startZxing();
+    setScanStatus('Наведите камеру на штрихкод (совместимый режим)');
+  } else {
+    setScanStatus('Камера недоступен. Нужен HTTPS и поддержка камеры.');
   }
-  return Promise.resolve();
 }
 
-function closeScanner(){
-  handling = false;
-  stopCamera();
-  $('overlay').classList.add('hidden');
-  $('overlay').classList.remove('flex');
+async function startStream(){
+  const constraints={ audio:false, video:{
+    facingMode:{ideal:'environment'},
+    width:{ideal:1920}, height:{ideal:1080}, frameRate:{ideal:30}
+  }};
+  mediaStream=await navigator.mediaDevices.getUserMedia(constraints);
+  const video=$('scanVideo');
+  video.srcObject=mediaStream;
+  await video.play();
+  // непрерывный автофокус
+  try{
+    const track=mediaStream.getVideoTracks()[0];
+    const caps=track.getCapabilities?track.getCapabilities():{};
+    if(caps.focusMode && caps.focusMode.includes && caps.focusMode.includes('continuous')){
+      await track.applyConstraints({advanced:[{focusMode:'continuous'}]});
+    }
+  }catch(e){}
+}
+
+function scheduleNext(fn){
+  const video=$('scanVideo');
+  if(video && 'requestVideoFrameCallback' in video) video.requestVideoFrameCallback(fn);
+  else requestAnimationFrame(fn);
+}
+
+function nativeLoop(){
+  const video=$('scanVideo');
+  const detect=async()=>{
+    if(!scanningActive) return;
+    try{
+      const codes=await nativeDetector.detect(video);
+      if(codes && codes.length){ handleDetected(codes[0].rawValue); return; }
+    }catch(e){}
+    scheduleNext(detect);
+  };
+  scheduleNext(detect);
+}
+
+function startZxing(){
+  const video=$('scanVideo');
+  const hints=new Map();
+  const fmts=[ZXing.BarcodeFormat.EAN_13,ZXing.BarcodeFormat.EAN_8,ZXing.BarcodeFormat.UPC_A,
+    ZXing.BarcodeFormat.UPC_E,ZXing.BarcodeFormat.CODE_128,ZXing.BarcodeFormat.CODE_39,
+    ZXing.BarcodeFormat.CODE_93,ZXing.BarcodeFormat.ITF,ZXing.BarcodeFormat.DATA_MATRIX,ZXing.BarcodeFormat.QR_CODE];
+  hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, fmts);
+  hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+  zxingReader=new ZXing.BrowserMultiFormatReader(hints,{delay:120});
+  const cb=(result)=>{ if(result) handleDetected(result.getText()); };
+  try{
+    if(typeof zxingReader.decodeFromVideoElement==='function'){ zxingReader.decodeFromVideoElement(video,cb); }
+    else if(typeof zxingReader.decodeFromConstraints==='function'){ zxingReader.decodeFromConstraints({video:{facingMode:{ideal:'environment'}}},video,cb); }
+    else{ zxingReader.decodeFromVideoDevice(undefined,video,cb); }
+  }catch(e){ setScanStatus('Ошибка сканера: '+e.message); }
 }
 
 async function toggleTorch(){
-  try {
-    const video = document.querySelector('#reader video');
-    const track = video && video.srcObject && video.srcObject.getVideoTracks()[0];
-    if (!track) return;
-    torchOn = !torchOn;
-    await track.applyConstraints({ advanced: [{ torch: torchOn }] });
-    $('torchBtn').classList.toggle('bg-yellow-400', torchOn);
-  } catch(e) { toast('Фонарик не поддерживается на этом устройстве', 'error'); torchOn = false; }
+  const video=$('scanVideo'); const stream=video.srcObject;
+  if(!stream){ return; }
+  const track=stream.getVideoTracks()[0]; if(!track) return;
+  try{
+    const caps=track.getCapabilities?track.getCapabilities():{};
+    if(caps.torch){
+      torchOn=!torchOn;
+      await track.applyConstraints({advanced:[{torch:torchOn}]});
+      $('torchBtn').classList.toggle('torch-on', torchOn);
+    } else toast('Вспышка недоступна на этом устройстве','err');
+  }catch(e){ toast('Вспышка не поддерживается','err'); }
 }
 
-function onScanSuccess(text){
-  if (handling) return;
-  handling = true;
-  beep(); if (navigator.vibrate) navigator.vibrate(180);
-  const code = String(text).trim();
-  $('scanStatus').textContent = '✅ Считано: ' + code;
-  const idx = inventoryData.findIndex(r => getBarcode(r) === code);
-  setTimeout(() => {
-    stopCamera().then(() => {
-      $('overlay').classList.add('hidden');
-      $('overlay').classList.remove('flex');
-      handling = false;
-      if (idx >= 0) openCard(idx, true);
-      else showNotFound(code);
-    });
-  }, 350);
+function handleDetected(code){
+  if(!scanningActive) return;
+  code=String(code||'').trim(); if(!code) return;
+  const now=Date.now();
+  if(code===lastCode && now-lastTime<2500) return;
+  lastCode=code; lastTime=now;
+  beep(); vib();
+  scanningActive=false;
+  setScanStatus('✅ Считано: '+code);
+  const idx=inventoryData.findIndex(r=>getBarcode(r)===code);
+  setTimeout(()=>{
+    closeScanner();
+    if(idx>=0) openCard(idx,true); else showNotFound(code);
+  },400);
 }
 
-/* ================== КАРТОЧКА ================== */
+function closeScanner(){
+  scanningActive=false;
+  if(zxingReader){ try{zxingReader.reset();}catch(e){} zxingReader=null; }
+  if(mediaStream){ mediaStream.getTracks().forEach(t=>t.stop()); mediaStream=null; }
+  const video=$('scanVideo'); if(video) video.srcObject=null;
+  $('scanOverlay').classList.add('hidden');
+}
+
+function setScanStatus(t){ $('scanStatus').textContent=t; }
+
+/* ============================================================
+   КАРТОЧКА
+============================================================ */
 function openCard(i, fromScan){
-  currentIndex = i;
-  cardReturnTab = fromScan ? 'scan' : 'db';
-  const r = inventoryData[i];
-  $('cName').textContent = r.product_name || '(без названия)';
-  $('cBarcode').textContent = getBarcode(r);
-  $('cCode').textContent = r['КодФормы'] || '—';
-  $('cLocation').textContent = r.storage_location || '—';
-  $('cStatus').innerHTML = statusBadge(r.status);
-  $('cNotes').textContent = r.notes || '—';
-  $('customNote').value = '';
+  currentIndex=i; cardReturnTab=fromScan?'scan':'db';
+  const r=inventoryData[i];
+  const color=statusColor(r.status);
 
-  const badge = $('cardScannedBadge');
-  if (r._scanned) { badge.textContent = '✅ Проверено в этой сессии: ' + r._scannedAt; badge.classList.remove('hidden'); }
+  const box=$('cardBox');
+  box.style.borderLeftColor=color;
+  box.style.background=tint(color,0.07);
+
+  $('cName').textContent=r.product_name||'(без названия)';
+  $('cBarcode').textContent=getBarcode(r);
+  $('cCode').textContent=r['КодФормы']||'—';
+  $('cLocation').textContent=r.storage_location||'—';
+  const sb=$('cStatusBadge');
+  sb.textContent=r.status||'нет статуса';
+  sb.style.background=color;
+  $('cNotes').textContent=r.notes||'—';
+  $('customNote').value='';
+
+  const badge=$('cardScannedBadge');
+  if(r._scanned){ badge.textContent='✅ Проверено: '+r._scannedAt; badge.classList.remove('hidden'); }
   else badge.classList.add('hidden');
+
+  // показать большую отметку, если уже проверяли
+  if(r._scanned && r._lastNote){ showMarkedBanner(r._lastNote, r._scannedAt, r._lastType); }
+  else $('markedBanner').classList.add('hidden');
 
   $('cardActions').classList.remove('hidden');
   $('cardMarked').classList.add('hidden');
   showView('card');
 }
 
+function showMarkedBanner(note, ts, type){
+  const b=$('markedBanner');
+  const isOk=(type==='ok');
+  b.className='marked-banner '+(isOk?'ok':'issue');
+  $('markedIcon').textContent=isOk?'✅':'⚠️';
+  $('markedTitle').textContent=isOk?'ПРОВЕРЕНО':'НЕСООТВЕТСТВИЕ';
+  $('markedNote').textContent=note;
+  $('markedTime').textContent=ts;
+  b.classList.remove('hidden');
+}
+
 function closeCard(){ showView(cardReturnTab); }
 
 function markCustom(){
-  const t = $('customNote').value.trim();
-  if (!t) { toast('Введите текст примечания', 'error'); return; }
+  const t=$('customNote').value.trim();
+  if(!t){ toast('Введите текст примечания','err'); return; }
   markItem(t);
 }
 
 function markItem(noteText){
-  if (currentIndex < 0) return;
-  const r = inventoryData[currentIndex];
-  const now = new Date();
-  const ts = now.toLocaleDateString('ru-RU') + ' ' + now.toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'});
-  r.notes = (r._baseNote ? r._baseNote + ' → ' : '') + noteText;
-  r['Дата проверки'] = ts;
-  r._scanned = true;
-  r._scannedAt = ts;
-  sessionLog.unshift({ i: currentIndex, t: ts, note: noteText });
-  if (sessionLog.length > 300) sessionLog.pop();
-  persist();
-  updateStats();
-  renderRecent();
+  if(currentIndex<0) return;
+  const r=inventoryData[currentIndex];
+  const now=new Date();
+  const ts=now.toLocaleDateString('ru-RU')+' '+now.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+  const isOk=(noteText==='Инвентаризация пройдена');
+  r.notes=(r._baseNote? r._baseNote+' → ':'')+noteText;
+  r['Дата проверки']=ts;
+  r._scanned=true; r._scannedAt=ts; r._lastNote=noteText; r._lastType=isOk?'ok':'issue';
+  sessionLog.unshift({i:currentIndex,t:ts,note:noteText,type:isOk?'ok':'issue'});
+  if(sessionLog.length>300) sessionLog.pop();
+  persist(); updateStats(); renderRecent();
 
   $('cardActions').classList.add('hidden');
   $('cardMarked').classList.remove('hidden');
-  $('markedInfo').innerHTML = '💾 Сохранено: <b>' + esc(noteText) + '</b><br><span class="text-xs opacity-70">' + ts + '</span>';
-  const badge = $('cardScannedBadge');
-  badge.textContent = '✅ Проверено: ' + ts;
-  badge.classList.remove('hidden');
-  $('cNotes').textContent = r.notes;
-  toast('Отметка сохранена', 'success');
+  showMarkedBanner(noteText, ts, isOk?'ok':'issue');
+  const badge=$('cardScannedBadge');
+  badge.textContent='✅ Проверено: '+ts; badge.classList.remove('hidden');
+  $('cNotes').textContent=r.notes;
+  toast(isOk?'Сохранено: форма на месте':'Сохранено: '+noteText, isOk?'ok':'info');
 }
 
-function scanNext(){
-  showView('scan');
-  openScanner();
-}
+function scanNext(){ showView('scan'); openScanner(); }
 
-/* ================== НЕ НАЙДЕНО ================== */
+/* ============================================================
+   НЕ НАЙДЕНО
+============================================================ */
 function showNotFound(code){
-  if (!notFoundLog.some(x => x.code === code)) {
-    const now = new Date();
-    notFoundLog.push({ code, t: now.toLocaleString('ru-RU') });
+  if(!notFoundLog.some(x=>x.code===code)){
+    notFoundLog.push({code, t:new Date().toLocaleString('ru-RU')});
     persist();
   }
-  $('nfCode').textContent = code;
-  renderNF();
-  showView('notfound');
+  $('nfCode').textContent=code;
+  renderNF(); showView('notfound');
 }
-
 function renderNF(){
-  const block = $('nfBlock');
-  if (!notFoundLog.length) { block.classList.add('hidden'); return; }
-  block.classList.remove('hidden');
-  $('nfCount').textContent = notFoundLog.length;
-  $('nfList').innerHTML = notFoundLog.map(x => `<div>${esc(x.code)} <span class="opacity-60">· ${esc(x.t)}</span></div>`).join('');
+  const b=$('nfBlock');
+  if(!notFoundLog.length){ b.classList.add('hidden'); return; }
+  b.classList.remove('hidden');
+  $('nfCount').textContent=notFoundLog.length;
+  $('nfList').innerHTML=notFoundLog.map(x=>'<div>'+esc(x.code)+' <span style="opacity:.6;">· '+esc(x.t)+'</span></div>').join('');
 }
 
-/* ================== ВКЛАДКА "БАЗА" ================== */
+/* ============================================================
+   ВКЛАДКА "БАЗА"
+============================================================ */
 function styleChips(){
-  document.querySelectorAll('#filterChips .chip').forEach(c => {
-    const active = c.dataset.f === dbFilter;
-    c.className = 'chip whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-bold border ' +
-      (active ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-300');
+  document.querySelectorAll('#filterChips .chip').forEach(c=>{
+    c.classList.toggle('active', c.dataset.f===dbFilter);
   });
 }
-
 function passFilter(r){
-  switch (dbFilter) {
+  switch(dbFilter){
     case 'scanned': return !!r._scanned;
     case 'notscanned': return !r._scanned;
-    case 'other': return !['В работе','В ремонте','Списана'].includes(String(r.status || ''));
+    case 'other': return !['В работе','В ремонте','Списана'].includes(String(r.status||''));
     case 'all': return true;
-    default: return String(r.status || '') === dbFilter;
+    default: return String(r.status||'')===dbFilter;
   }
 }
-
 function renderDb(){
-  const q = $('searchInput').value.trim().toLowerCase();
-  const filtered = [];
-  for (let i = 0; i < inventoryData.length; i++) {
-    const r = inventoryData[i];
-    if (!passFilter(r)) continue;
-    if (q) {
-      const hay = (getBarcode(r) + ' ' + (r.product_name||'') + ' ' + (r['КодФормы']||'') + ' ' + (r.storage_location||'')).toLowerCase();
-      if (!hay.includes(q)) continue;
+  const q=$('searchInput').value.trim().toLowerCase();
+  const filtered=[];
+  for(let i=0;i<inventoryData.length;i++){
+    const r=inventoryData[i];
+    if(!passFilter(r)) continue;
+    if(q){
+      const hay=(getBarcode(r)+' '+(r.product_name||'')+' '+(r['КодФормы']||'')+' '+(r.storage_location||'')).toLowerCase();
+      if(!hay.includes(q)) continue;
     }
-    filtered.push({ r, i });
+    filtered.push({r,i});
   }
-  $('dbCount').textContent = `Найдено: ${filtered.length} из ${inventoryData.length}`;
-  const slice = filtered.slice(0, dbShown);
-  $('dbList').innerHTML = slice.map(({r, i}) => `
-    <div class="db-row bg-white rounded-xl p-3 shadow-sm border border-gray-200 active:bg-blue-50 cursor-pointer" data-i="${i}">
-      <div class="flex justify-between items-start gap-2">
-        <div class="font-semibold text-sm leading-snug">${esc(r.product_name || '(без названия)')}</div>
-        ${r._scanned ? '<span class="text-green-600 font-bold text-xs whitespace-nowrap">✅</span>' : ''}
+  $('dbCount').textContent='Найдено: '+filtered.length+' из '+inventoryData.length;
+  const slice=filtered.slice(0,dbShown);
+  $('dbList').innerHTML=slice.map(({r,i})=>{
+    const color=statusColor(r.status);
+    return `<div class="db-row" data-i="${i}" style="border-left-color:${color};">
+      <div class="db-top">
+        <div class="db-name">${esc(r.product_name||'(без названия)')}</div>
+        ${r._scanned?'<span class="db-scanned">✅</span>':''}
       </div>
-      <div class="text-[11px] text-gray-400 font-mono mt-0.5">${esc(getBarcode(r))} · ${esc(r['КодФормы']||'')}</div>
-      <div class="flex flex-wrap gap-1.5 mt-1.5 items-center">
-        ${r.storage_location ? `<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700">📍 ${esc(r.storage_location)}</span>` : ''}
-        ${statusBadge(r.status)}
+      <div class="db-code">${esc(getBarcode(r))} · ${esc(r['КодФормы']||'')}</div>
+      <div class="db-meta">
+        ${r.storage_location?'<span class="loc-badge">📍 '+esc(r.storage_location)+'</span>':''}
+        <span class="st-badge" style="background:${color};">${esc(r.status||'нет статуса')}</span>
       </div>
-    </div>`).join('') || '<div class="text-center text-gray-400 text-sm py-8">Ничего не найдено</div>';
-
-  const more = $('moreBtn');
-  if (filtered.length > dbShown) { more.classList.remove('hidden'); more.textContent = `Показать ещё (${filtered.length - dbShown})`; }
+    </div>`;
+  }).join('') || '<div style="text-align:center;color:var(--muted);padding:30px;">Ничего не найдено</div>';
+  const more=$('moreBtn');
+  if(filtered.length>dbShown){ more.classList.remove('hidden'); more.textContent='Показать ещё ('+(filtered.length-dbShown)+')'; }
   else more.classList.add('hidden');
 }
-
-$('dbList')?.addEventListener?.('click', () => {}); // placeholder
-document.addEventListener('click', e => {
-  const row = e.target.closest('.db-row');
-  if (row) openCard(+row.dataset.i, false);
+document.addEventListener('click', e=>{
+  const row=e.target.closest('.db-row'); if(row){ openCard(+row.dataset.i,false); return; }
+  const rec=e.target.closest('[data-recent]'); if(rec){ openCard(+rec.dataset.i,false); }
 });
 
-function statusBadge(s){
-  s = String(s || '').trim();
-  if (!s) return '<span class="px-2 py-0.5 rounded-full text-[11px] bg-gray-100 text-gray-500">нет статуса</span>';
-  let cls = 'bg-gray-100 text-gray-700';
-  if (s === 'В работе') cls = 'bg-green-100 text-green-700';
-  else if (s === 'В ремонте') cls = 'bg-orange-100 text-orange-700';
-  else if (s === 'Списана') cls = 'bg-red-100 text-red-600';
-  else if (s.includes('проверке')) cls = 'bg-blue-100 text-blue-700';
-  else if (s.includes('литье')) cls = 'bg-indigo-100 text-indigo-700';
-  else if (s.includes('остановлено') || s === 'На консервации') cls = 'bg-purple-100 text-purple-700';
-  return `<span class="px-2 py-0.5 rounded-full text-[11px] font-medium ${cls}">${esc(s)}</span>`;
-}
-
-/* ================== СПИСКИ / СТАТИСТИКА ================== */
+/* ============================================================
+   СПИСКИ / СТАТИСТИКА
+============================================================ */
 function updateStats(){
-  const total = inventoryData.length;
-  const done = inventoryData.filter(r => r._scanned).length;
-  $('hdrStats').textContent = total ? `${done}/${total}` : '—';
-  $('statDone').textContent = done;
-  $('statTotal').textContent = total;
-  $('progressBar').style.width = total ? (done / total * 100).toFixed(1) + '%' : '0%';
+  const total=inventoryData.length;
+  const done=inventoryData.filter(r=>r._scanned).length;
+  $('hdrStats').textContent=total? done+'/'+total : '—';
+  $('statDone').textContent=done; $('statTotal').textContent=total;
+  $('progressBar').style.width=total? (done/total*100).toFixed(1)+'%':'0%';
 }
 
 function renderRecent(){
-  const el = $('recentList');
-  if (!sessionLog.length) { el.innerHTML = '<div class="text-gray-400 text-xs">Пока ничего не отсканировано</div>'; return; }
-  el.innerHTML = sessionLog.slice(0, 25).map(x => {
-    const r = inventoryData[x.i];
-    if (!r) return '';
-    return `<div class="flex items-center gap-2 bg-gray-50 rounded-lg p-2 cursor-pointer active:bg-blue-50" data-i="${x.i}" data-recent="1">
-      <span class="text-green-600 font-bold">✅</span>
-      <div class="flex-grow min-w-0">
-        <div class="text-xs font-semibold truncate">${esc(r.product_name || '')}</div>
-        <div class="text-[10px] text-gray-400 truncate">${esc(x.note)} · ${esc(x.t)}</div>
+  const el=$('recentList');
+  if(!sessionLog.length){ el.innerHTML='<div class="muted small">Пока ничего не отсканировано</div>'; return; }
+  el.innerHTML=sessionLog.slice(0,30).map(x=>{
+    const r=inventoryData[x.i]; if(!r) return '';
+    const isOk=(x.type==='ok');
+    const mark=isOk?'<span class="mark">✅</span>':'<span class="mark">⚠️</span>';
+    return `<div class="recent-row" data-recent="1" data-i="${x.i}">${mark}
+      <div class="recent-info">
+        <div class="recent-name">${esc(r.product_name||'')}</div>
+        <div class="recent-note ${isOk?'':'issue-text'}">${esc(x.note)} · ${esc(x.t)}</div>
       </div>
     </div>`;
   }).join('');
 }
 
-document.addEventListener('click', e => {
-  const rec = e.target.closest('[data-recent]');
-  if (rec) openCard(+rec.dataset.i, false);
-});
-
-/* ================== СБРОС / ЭКСПОРТ ================== */
+/* ============================================================
+   СБРОС / ЭКСПОРТ
+============================================================ */
 function resetMarks(){
-  if (!confirm('Сбросить все отметки этой сессии?')) return;
-  inventoryData.forEach(r => { r.notes = r._baseNote; r['Дата проверки'] = ''; delete r._scanned; delete r._scannedAt; });
-  sessionLog = []; notFoundLog = [];
+  if(!confirm('Сбросить все отметки этой сессии?')) return;
+  inventoryData.forEach(r=>{ r.notes=r._baseNote; r['Дата проверки']=''; delete r._scanned; delete r._scannedAt; delete r._lastNote; delete r._lastType; });
+  sessionLog=[]; notFoundLog=[];
   persist(); updateStats(); renderRecent(); renderNF();
-  toast('Отметки сброшены', 'success');
+  toast('Отметки сброшены','ok');
 }
-
 function resetAll(){
-  if (!confirm('Начать заново? Все отметки будут удалены, база загрузится с сервера.')) return;
-  localStorage.removeItem(LS_KEY);
-  location.reload();
+  if(!confirm('Начать заново? Все отметки будут удалены, база загрузится с сервера.')) return;
+  localStorage.removeItem(LS_KEY); location.reload();
 }
-
 function exportData(){
-  if (!inventoryData.length) { toast('Нет данных для экспорта', 'error'); return; }
-  const rows = inventoryData.map(r => {
-    const c = {};
-    for (const k of Object.keys(r)) if (!k.startsWith('_')) c[k] = r[k];
-    return c;
-  });
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'Инвентаризация');
-  if (notFoundLog.length) {
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(notFoundLog.map(x => ({Штрихкод: x.code, Время: x.t}))), 'Не найдены в базе');
-  }
-  const d = new Date(), p = n => String(n).padStart(2, '0');
-  XLSX.writeFile(wb, `Инвентаризация_${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}_${p(d.getHours())}-${p(d.getMinutes())}.xlsx`);
-  toast('Файл выгружен', 'success');
+  if(!inventoryData.length){ toast('Нет данных для экспорта','err'); return; }
+  const rows=inventoryData.map(r=>{ const c={}; for(const k of Object.keys(r)) if(!k.startsWith('_')) c[k]=r[k]; return c; });
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows),'Инвентаризация');
+  if(notFoundLog.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(notFoundLog.map(x=>({'Штрихкод':x.code,'Время':x.t}))),'Не найдены в базе');
+  const d=new Date(),p=n=>String(n).padStart(2,'0');
+  XLSX.writeFile(wb, 'Инвентаризация_'+d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'_'+p(d.getHours())+'-'+p(d.getMinutes())+'.xlsx');
+  toast('Файл выгружен','ok');
 }
 
-/* ================== ЗВУК / ТОСТ ================== */
+/* ============================================================
+   ЗВУК / ВИБРАЦИЯ / ТОСТ
+============================================================ */
 function beep(){
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const o = ctx.createOscillator(), g = ctx.createGain();
-    o.connect(g); g.connect(ctx.destination);
-    o.frequency.value = 1250; o.type = 'square'; g.gain.value = 0.06;
-    o.start();
-    setTimeout(() => { o.stop(); ctx.close(); }, 140);
-  } catch(e){}
+  try{ const ctx=new (window.AudioContext||window.webkitAudioContext)();
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.connect(g);g.connect(ctx.destination);
+    o.frequency.value=1250;o.type='square';g.gain.value=0.06;
+    o.start(); setTimeout(()=>{o.stop();ctx.close();},140);
+  }catch(e){}
 }
+function vib(){ if(navigator.vibrate) navigator.vibrate(180); }
 
 let toastTimer;
-function toast(msg, type){
-  const t = $('toast');
-  t.textContent = msg;
-  t.className = 'fixed top-16 left-1/2 -translate-x-1/2 z-[60] px-4 py-2.5 rounded-xl text-sm font-bold shadow-lg ' +
-    (type === 'error' ? 'bg-red-600 text-white' : type === 'success' ? 'bg-green-600 text-white' : 'bg-gray-800 text-white');
+function toast(msg,type){
+  const t=$('toast');
+  t.textContent=msg; t.className=type||'info';
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.add('hidden'), 2200);
-  t.classList.remove('hidden');
+  toastTimer=setTimeout(()=>t.classList.add('hidden'),2200);
+}
+</script>
+
+<script>
+/* ============================================================
+   SERVICE WORKER — офлайн-режим
+============================================================ */
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js').then(reg=>{
+      console.log('SW зарегистрирован');
+    }).catch(e=>console.warn('SW ошибка',e));
+  });
 }
 </script>
 </body>
