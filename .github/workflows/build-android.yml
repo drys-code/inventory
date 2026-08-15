@@ -33,15 +33,38 @@ jobs:
       - name: Подготовка иконки (квадрат 1024×1024)
         run: |
           mkdir -p assets
-          if [ -f icon.png ]; then mv -f icon.png assets/icon.png; fi
-          if [ -f icon-source.png ]; then mv -f icon-source.png assets/icon-source.png; fi
-          if [ -f assets/icon-source.png ]; then
+          # переносим в assets/ всё, что загрузили в корень
+          [ -f icon.ico ] && mv -f icon.ico assets/icon-source.ico
+          [ -f icon-source.ico ] && mv -f icon-source.ico assets/icon-source.ico
+          [ -f icon.png ] && mv -f icon.png assets/icon-source.png
+          [ -f icon-source.png ] && mv -f icon-source.png assets/icon-source.png
+
+          # если файл с расширением .png на самом деле ICO (битый PNG) — переименовываем
+          if [ -f assets/icon-source.png ] && ! identify assets/icon-source.png >/dev/null 2>&1; then
+            echo "Файл icon-source.png на самом деле ICO — переименовываю"
+            mv -f assets/icon-source.png assets/icon-source.ico
+          fi
+
+          # ICO -> PNG (берём самый крупный кадр иконки)
+          if [ -f assets/icon-source.ico ]; then
+            idx=$(identify -format "%w %[scene]\n" assets/icon-source.ico 2>/dev/null | sort -rn | head -n1 | awk '{print $2}')
+            [ -z "$idx" ] && idx=0
+            echo "Использую кадр ICO #$idx"
+            convert "assets/icon-source.ico[$idx]" \
+              -background "#1e3a8a" -alpha remove -alpha off \
+              -resize 1024x1024 -gravity center -extent 1024x1024 assets/icon.png
+          fi
+
+          # PNG -> квадрат (если иконка пришла как png)
+          if [ ! -f assets/icon.png ] && [ -f assets/icon-source.png ]; then
             convert assets/icon-source.png -trim +repage -resize 1024x1024 \
               -gravity center -background "#1e3a8a" -extent 1024x1024 assets/icon.png
           fi
+
           if [ -f assets/icon.png ]; then
             cp -f assets/icon.png assets/icon-only.png
             cp -f assets/icon.png assets/splash.png
+            identify assets/icon.png
           else
             echo "Иконка не найдена — останется стандартная"
           fi
