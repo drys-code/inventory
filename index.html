@@ -675,17 +675,15 @@ async function exportData(){
   if(notFoundLog.length) XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(notFoundLog.map(x=>({'Штрихкод':x.code,'Время':x.t}))),'Не найдены');
   if(isCapacitor()){
     try{
-      const F=window.Capacitor.Plugins.Filesystem, S=window.Capacitor.Plugins.Share;
+      const F=window.Capacitor.Plugins.Filesystem;
       const out=XLSX.write(wb,{bookType:'xlsx',type:'array'});
       try{ await F.deleteFile({path:filename,directory:'DOCUMENTS'}); }catch(e){}
       await F.writeFile({path:filename,data:arrayBufferToBase64(out),directory:'DOCUMENTS',recursive:true});
-      const u=await F.getUri({path:filename,directory:'DOCUMENTS'});
-      toast('Сохранено: '+filename,'ok');
-      try{ await S.share({title:'Отчёт инвентаризации',url:u.uri,dialogMessage:'Сохраните или отправьте: '+filename}); }catch(e){}
+      // Без «Поделиться» — просто пишем, куда сохранилось
+      toast('✅ Сохранено в папку «Документы»: '+filename,'ok',6000);
     }catch(e){ toast('Ошибка экспорта: '+((e&&e.message)||e),'err'); }
   } else { XLSX.writeFile(wb,filename); toast('Файл выгружен','ok'); }
 }
-
 /* ================= ЗВУК / ТОСТ ================= */
 function beep(){ try{ const c=new (window.AudioContext||window.webkitAudioContext)(); const o=c.createOscillator(),g=c.createGain(); o.connect(g);g.connect(c.destination); o.frequency.value=1250;o.type='square';g.gain.value=.06; o.start(); setTimeout(()=>{o.stop();c.close();},140);}catch(e){} }
 function vib(){ if(navigator.vibrate) navigator.vibrate(180); }
