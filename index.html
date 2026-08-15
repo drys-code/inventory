@@ -985,7 +985,7 @@ function toast(msg,type){
 </script>
 
 <script>
-if('serviceWorker' in navigator){
+if('serviceWorker' in navigator && !(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform())){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('sw.js').then(()=>{}).catch(e=>console.warn('SW ошибка',e));
   });
