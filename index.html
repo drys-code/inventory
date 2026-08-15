@@ -7,117 +7,136 @@
 <title>Инвентаризация пресс-форм</title>
 <style>
   :root{
-    --blue:#2563eb; --blue-d:#1e3a8a; --green:#16a34a; --green-d:#15803d;
-    --orange:#ea580c; --red:#dc2626; --gray:#6b7280; --bg:#f3f4f6;
-    --card:#fff; --border:#e5e7eb; --text:#1f2937; --muted:#6b7280;
+    --blue:#2563eb; --blue-d:#1e3a8a; --green:#16a34a; --orange:#ea580c; --red:#dc2626;
+    --bg:#f4f6fa; --card:#fff; --border:#e7eaf0; --text:#1f2937; --muted:#8a94a3;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   html,body{margin:0;padding:0;overscroll-behavior:none;}
   body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);user-select:none;}
-  button{font-family:inherit;cursor:pointer;border:none;}
-  input{font-family:inherit;}
+  input{user-select:text;font-family:inherit;}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;}
   .hidden{display:none !important;}
   .small{font-size:12px;} .muted{color:var(--muted);}
 
-  #boot{position:fixed;inset:0;background:var(--blue-d);z-index:100;display:flex;align-items:center;justify-content:center;color:#fff;}
-  .boot-box{text-align:center;padding:24px;max-width:320px;}
-  .boot-title{font-size:22px;font-weight:700;margin-bottom:12px;}
-  #bootMsg{font-size:14px;opacity:.9;min-height:40px;margin-bottom:16px;}
-  .boot-bar{height:6px;background:rgba(255,255,255,.2);border-radius:3px;overflow:hidden;}
+  /* ===== Загрузка ===== */
+  #boot{position:fixed;inset:0;background:linear-gradient(160deg,#1e3a8a,#2563eb);z-index:100;display:flex;align-items:center;justify-content:center;color:#fff;}
+  .boot-box{text-align:center;padding:24px;}
+  .boot-title{font-size:24px;font-weight:800;margin-bottom:10px;}
+  #bootMsg{font-size:14px;opacity:.9;min-height:36px;margin-bottom:16px;}
+  .boot-bar{width:200px;height:6px;margin:0 auto;background:rgba(255,255,255,.25);border-radius:3px;overflow:hidden;}
   #bootBar{height:100%;width:0;background:#4ade80;transition:width .3s;}
 
-  header{position:sticky;top:0;z-index:30;background:var(--blue-d);color:#fff;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;box-shadow:0 2px 6px rgba(0,0,0,.15);}
-  .hdr{max-width:560px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:8px;}
-  .hdr h1{font-size:17px;margin:0;line-height:1.2;}
-  .hdr-right{display:flex;align-items:center;gap:10px;}
-  #hdrStats{font-size:14px;font-weight:700;background:rgba(255,255,255,.15);padding:4px 10px;border-radius:10px;}
-  .export-mini{background:rgba(255,255,255,.22);color:#fff;border-radius:10px;padding:6px 12px;font-size:13px;font-weight:700;}
-  .export-mini:active{transform:scale(.95);}
+  /* ===== Шапка ===== */
+  header{position:sticky;top:0;z-index:30;background:linear-gradient(120deg,#1e3a8a,#2563eb);color:#fff;padding:calc(12px + env(safe-area-inset-top)) 16px 12px;box-shadow:0 2px 10px rgba(30,58,138,.25);}
+  .hdr{max-width:560px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;}
+  .hdr-title{font-size:17px;font-weight:800;}
+  .hdr-right{display:flex;align-items:center;gap:8px;}
+  .stats-pill{background:rgba(255,255,255,.18);padding:5px 12px;border-radius:14px;font-size:13px;font-weight:700;}
+  .icon-btn{font-size:17px;padding:5px 8px;border-radius:10px;background:rgba(255,255,255,.14);}
+  .icon-btn:active{transform:scale(.9);}
 
-  main{max-width:560px;margin:0 auto;padding:14px;padding-bottom:calc(90px + env(safe-area-inset-bottom));}
+  main{max-width:560px;margin:0 auto;padding:14px;padding-bottom:calc(92px + env(safe-area-inset-bottom));}
 
-  .card{background:var(--card);border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.08);}
-  .card-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+  /* ===== Анимации переходов ===== */
+  @keyframes slideLeft{from{opacity:.3;transform:translateX(55%)}to{opacity:1;transform:none}}
+  @keyframes slideRight{from{opacity:.3;transform:translateX(-55%)}to{opacity:1;transform:none}}
+  @keyframes zoomIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+  @keyframes zoomOut{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(.94)}}
+  .anim-slide-left{animation:slideLeft .28s cubic-bezier(.22,.9,.36,1)}
+  .anim-slide-right{animation:slideRight .28s cubic-bezier(.22,.9,.36,1)}
+  .anim-zoom{animation:zoomIn .26s cubic-bezier(.22,.9,.36,1)}
 
-  .progress-row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;}
-  .progress-bar{height:10px;background:var(--border);border-radius:5px;overflow:hidden;}
-  #progressBar{height:100%;background:var(--green);border-radius:5px;transition:width .3s;width:0;}
+  .card{background:var(--card);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(20,40,80,.06);}
+  .card-title{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px;}
 
-  .btn{display:block;width:100%;padding:13px;border-radius:12px;font-size:15px;font-weight:700;text-align:center;transition:transform .1s;}
-  .btn:active{transform:scale(.97);}
-  .btn-green{background:var(--green);color:#fff;}
-  .btn-blue{background:var(--blue);color:#fff;}
-  .btn-gray{background:#e5e7eb;color:var(--text);}
-  .btn-red{background:#fee2e2;color:var(--red);}
-  .btn-big{padding:20px;font-size:19px;border-radius:16px;box-shadow:0 4px 12px rgba(22,163,74,.35);}
-  .pulse{animation:pulse 2s infinite;}
-  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(22,163,74,.5)}70%{box-shadow:0 0 0 18px rgba(22,163,74,0)}100%{box-shadow:0 0 0 0 rgba(22,163,74,0)}}
+  /* ===== Главный экран ===== */
+  .hero{text-align:center;padding:22px 16px;}
+  .scan-circle{width:150px;height:150px;border-radius:50%;margin:6px auto 16px;background:linear-gradient(140deg,#22c55e,#15803d);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-size:15px;font-weight:800;box-shadow:0 12px 30px rgba(22,163,74,.45);transition:transform .15s;}
+  .scan-circle:active{transform:scale(.92);}
+  .pulse{animation:pulse 2.2s infinite;}
+  @keyframes pulse{0%{box-shadow:0 12px 30px rgba(22,163,74,.45),0 0 0 0 rgba(34,197,94,.5)}70%{box-shadow:0 12px 30px rgba(22,163,74,.45),0 0 0 22px rgba(34,197,94,0)}100%{box-shadow:0 12px 30px rgba(22,163,74,.45),0 0 0 0 rgba(34,197,94,0)}}
+  .hero-count{font-size:14px;color:var(--muted);margin-bottom:8px;}
+  .hero-count b{font-size:20px;color:var(--text);}
+  .progress-bar{height:10px;background:var(--border);border-radius:6px;overflow:hidden;}
+  #progressBar{height:100%;width:0;background:linear-gradient(90deg,#22c55e,#16a34a);border-radius:6px;transition:width .4s;}
 
-  .qbtn{padding:8px 12px;border-radius:10px;font-size:13px;font-weight:700;background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;flex:1;}
-  .qbtn.active{background:var(--blue);color:#fff;border-color:var(--blue);}
-
-  .recent-row{display:flex;gap:10px;align-items:flex-start;background:#f9fafb;border-radius:10px;padding:9px;margin-bottom:6px;cursor:pointer;}
-  .recent-row:active{background:#eff6ff;}
-  .mark{font-size:18px;line-height:1;}
+  .recent-row{display:flex;gap:10px;align-items:center;background:#f7f9fc;border-radius:12px;padding:10px;margin-bottom:6px;cursor:pointer;transition:transform .12s;}
+  .recent-row:active{transform:scale(.98);}
+  .mark{font-size:18px;}
   .recent-info{flex:1;min-width:0;}
   .recent-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .recent-note{font-size:11px;color:var(--muted);margin-top:1px;}
+  .recent-note{font-size:11px;color:var(--muted);}
   .recent-note.issue-text{color:var(--orange);font-weight:600;}
 
-  #searchInput{width:100%;padding:12px;border:1px solid var(--border);border-radius:12px;font-size:14px;background:#fff;outline:none;}
+  /* ===== База ===== */
+  #searchInput{width:100%;padding:13px 14px;border:1px solid var(--border);border-radius:14px;font-size:14px;background:#fff;outline:none;}
   #searchInput:focus{border-color:var(--blue);}
-  .chips{display:flex;gap:6px;overflow-x:auto;padding:8px 0;scrollbar-width:none;}
+  .chips{display:flex;gap:6px;overflow-x:auto;padding:10px 0;scrollbar-width:none;}
   .chips::-webkit-scrollbar{display:none;}
-  .chip{white-space:nowrap;padding:6px 12px;border-radius:16px;font-size:12px;font-weight:600;background:#fff;border:1px solid var(--border);color:var(--muted);}
+  .chip{white-space:nowrap;padding:7px 13px;border-radius:16px;font-size:12px;font-weight:700;background:#fff;border:1px solid var(--border);color:var(--muted);}
   .chip.active{background:var(--blue);color:#fff;border-color:var(--blue);}
-  .db-row{background:#fff;border-radius:12px;padding:10px 12px;margin-bottom:8px;box-shadow:0 1px 2px rgba(0,0,0,.06);cursor:pointer;border-left:5px solid var(--gray);}
-  .db-row:active{background:#eff6ff;}
-  .db-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
-  .db-name{font-size:13px;font-weight:600;line-height:1.3;}
-  .db-scanned{color:var(--green);font-weight:700;font-size:13px;}
+  .db-row{border-radius:14px;padding:12px;margin-bottom:8px;cursor:pointer;border-left:5px solid var(--gray);box-shadow:0 1px 4px rgba(20,40,80,.06);transition:transform .12s;}
+  .db-row:active{transform:scale(.98);}
+  .db-top{display:flex;justify-content:space-between;gap:8px;}
+  .db-name{font-size:13px;font-weight:700;line-height:1.3;}
+  .db-scanned{color:var(--green);font-weight:800;}
   .db-code{font-size:10px;color:var(--muted);font-family:monospace;margin-top:2px;}
-  .db-meta{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;align-items:center;}
-  .loc-badge{font-size:10px;font-weight:700;background:#eff6ff;color:var(--blue);padding:2px 8px;border-radius:8px;}
-  .st-badge{font-size:10px;font-weight:700;color:#fff;padding:2px 8px;border-radius:8px;}
+  .db-meta{display:flex;gap:6px;margin-top:7px;flex-wrap:wrap;}
+  .loc-badge{font-size:10px;font-weight:800;background:rgba(37,99,235,.12);color:var(--blue);padding:3px 8px;border-radius:8px;}
+  .st-badge{font-size:10px;font-weight:800;color:#fff;padding:3px 8px;border-radius:8px;}
 
-  .item-card{border-radius:14px;padding:16px;margin-bottom:12px;border-left:8px solid var(--gray);background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.08);}
-  .item-name{font-size:18px;font-weight:700;line-height:1.3;margin-bottom:10px;}
-  .field{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.04);}
-  .field .k{color:var(--muted);} .field .v{font-weight:600;text-align:right;}
+  /* ===== Настройки ===== */
+  .set-row{display:flex;align-items:center;gap:12px;padding:12px 2px;border-bottom:1px solid var(--border);cursor:pointer;}
+  .set-row:last-child{border-bottom:none;}
+  .set-row:active{opacity:.7;}
+  .set-ico{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:19px;background:#eef2ff;flex-shrink:0;}
+  .set-label{flex:1;font-size:14px;font-weight:600;}
+  .set-sub{display:block;font-size:11px;color:var(--muted);font-weight:400;margin-top:1px;}
+  .chev{color:#c3c8d1;font-size:16px;}
+  .seg{display:flex;background:#eef1f5;border-radius:12px;padding:4px;}
+  .seg button{flex:1;padding:10px;border-radius:9px;font-size:13px;font-weight:700;color:var(--muted);}
+  .seg button.active{background:#fff;color:var(--blue);box-shadow:0 1px 5px rgba(0,0,0,.12);}
+
+  /* ===== Карточка ===== */
+  .item-card{border-radius:18px;padding:18px;margin-bottom:12px;border-left:8px solid var(--gray);background:#fff;box-shadow:0 4px 14px rgba(20,40,80,.08);}
+  .item-name{font-size:18px;font-weight:800;line-height:1.3;margin-bottom:10px;}
+  .field{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:7px 0;border-bottom:1px solid var(--border);}
+  .field .k{color:var(--muted);} .field .v{font-weight:700;text-align:right;}
   .field .v.mono{font-family:monospace;font-size:15px;}
-  .notes-box{margin-top:8px;font-size:12px;color:var(--muted);background:rgba(0,0,0,.03);padding:8px;border-radius:8px;}
-
-  .marked-banner{display:flex;gap:12px;align-items:center;border-radius:14px;padding:14px;margin-bottom:12px;color:#fff;}
-  .marked-banner.ok{background:var(--green);}
-  .marked-banner.issue{background:var(--orange);}
-  .marked-icon{font-size:34px;line-height:1;}
-  .marked-title{font-size:18px;font-weight:800;letter-spacing:.5px;}
-  .marked-note{font-size:13px;font-weight:600;margin-top:2px;}
-  .marked-time{font-size:11px;opacity:.85;margin-top:2px;}
+  .notes-box{margin-top:10px;font-size:12px;color:var(--muted);background:rgba(0,0,0,.04);padding:10px;border-radius:10px;}
+  .marked-banner{display:flex;gap:12px;align-items:center;border-radius:16px;padding:14px;margin-bottom:12px;color:#fff;}
+  .marked-banner.ok{background:linear-gradient(120deg,#22c55e,#16a34a);}
+  .marked-banner.issue{background:linear-gradient(120deg,#fb923c,#ea580c);}
+  .marked-icon{font-size:32px;}
+  .marked-title{font-size:17px;font-weight:800;}
+  .marked-note{font-size:13px;font-weight:600;}
+  .marked-time{font-size:11px;opacity:.85;}
   .session-badge{display:inline-block;font-size:12px;font-weight:700;color:#fff;background:var(--green);padding:4px 10px;border-radius:10px;margin-bottom:8px;}
 
-  .quick-chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;}
-  .q-chip{background:#fff7ed;color:var(--orange);border:1px solid #fed7aa;padding:8px 10px;border-radius:10px;font-size:12px;font-weight:600;}
+  .btn{display:block;width:100%;padding:14px;border-radius:14px;font-size:15px;font-weight:700;text-align:center;transition:transform .12s;}
+  .btn:active{transform:scale(.97);}
+  .btn-green{background:linear-gradient(120deg,#22c55e,#16a34a);color:#fff;}
+  .btn-blue{background:linear-gradient(120deg,#3b82f6,#2563eb);color:#fff;}
+  .btn-gray{background:#eef1f5;color:var(--text);}
+  .btn-red{background:#fee2e2;color:var(--red);}
+  .btn-big{padding:18px;font-size:17px;}
+  .quick-chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0;}
+  .q-chip{background:#fff7ed;color:var(--orange);border:1px solid #fed7aa;padding:9px 11px;border-radius:12px;font-size:12px;font-weight:700;}
   .custom-row{display:flex;gap:8px;margin-top:8px;}
-  .custom-row input{flex:1;padding:11px;border:1px solid var(--border);border-radius:10px;font-size:13px;outline:none;}
+  .custom-row input{flex:1;padding:12px;border:1px solid var(--border);border-radius:12px;font-size:13px;outline:none;}
 
-  .nf-box{background:#fef2f2;border-left:5px solid var(--red);border-radius:14px;padding:16px;margin-bottom:12px;}
-  .nf-code{font-family:monospace;font-size:20px;font-weight:700;background:#fff;border:1px solid #fecaca;padding:8px;border-radius:8px;margin:10px 0;}
+  .nf-box{background:#fef2f2;border-left:5px solid var(--red);border-radius:16px;padding:16px;margin-bottom:12px;}
+  .nf-code{font-family:monospace;font-size:20px;font-weight:700;background:#fff;border:1px solid #fecaca;padding:8px;border-radius:10px;margin:10px 0;}
 
-  nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);z-index:30;box-shadow:0 -2px 8px rgba(0,0,0,.08);padding-bottom:env(safe-area-inset-bottom);}
-  .nav-inner{max-width:560px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;}
-  .nav-btn{padding:14px;font-size:13px;font-weight:700;color:var(--muted);background:none;border-top:3px solid transparent;}
-  .nav-btn.active{color:var(--blue);border-top-color:var(--blue);background:#eff6ff;}
+  /* ===== Нижнее меню ===== */
+  nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);z-index:30;padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -4px 16px rgba(20,40,80,.08);}
+  .nav-inner{max-width:560px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr 1fr;}
+  .nav-btn{padding:10px 4px 12px;font-size:11px;font-weight:700;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;}
+  .nav-ico{font-size:20px;}
+  .nav-btn.active{color:var(--blue);}
+  .nav-btn.active .nav-ico{transform:translateY(-2px) scale(1.1);}
 
-  /* Анимации переходов */
-  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-  @keyframes slideInLeft{from{opacity:.3;transform:translateX(50px)}to{opacity:1;transform:none}}
-  @keyframes slideInRight{from{opacity:.3;transform:translateX(-50px)}to{opacity:1;transform:none}}
-  .anim-fade{animation:fadeIn .22s ease-out}
-  .anim-slide-left{animation:slideInLeft .25s ease-out}
-  .anim-slide-right{animation:slideInRight .25s ease-out}
-
-  #toast{position:fixed;top:calc(60px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:60;padding:11px 18px;border-radius:12px;font-size:13px;font-weight:700;color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.25);}
+  #toast{position:fixed;top:calc(64px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:60;padding:12px 20px;border-radius:14px;font-size:13px;font-weight:700;color:#fff;box-shadow:0 6px 18px rgba(0,0,0,.25);animation:zoomIn .2s;}
   #toast.ok{background:var(--green);} #toast.err{background:var(--red);} #toast.info{background:#374151;}
 </style>
 </head>
@@ -133,46 +152,34 @@
 
 <header>
   <div class="hdr">
-    <h1>📦 Инвентаризация</h1>
+    <div class="hdr-title">📦 Инвентаризация</div>
     <div class="hdr-right">
-      <span id="hdrStats">—</span>
-      <button class="export-mini" onclick="exportData()">💾 Экспорт</button>
+      <span id="hdrStats" class="stats-pill">0/0</span>
+      <button class="icon-btn" onclick="exportData()">💾</button>
     </div>
   </div>
 </header>
 
 <main>
+  <!-- ===== ГЛАВНАЯ ===== -->
   <section id="view-scan">
-    <div class="card">
-      <div class="progress-row"><span class="muted">Проверено</span><b><span id="statDone">0</span> / <span id="statTotal">0</span></b></div>
+    <div class="card hero">
+      <div class="scan-circle pulse" onclick="openScanner()">
+        <svg viewBox="0 0 48 48" width="52" height="52"><g fill="#fff">
+          <rect x="6" y="8" width="3" height="32"/><rect x="11" y="8" width="2" height="32"/>
+          <rect x="15" y="8" width="4" height="32"/><rect x="21" y="8" width="2" height="32"/>
+          <rect x="25" y="8" width="3" height="32"/><rect x="30" y="8" width="2" height="32"/>
+          <rect x="34" y="8" width="4" height="32"/><rect x="40" y="8" width="2" height="32"/>
+        </g></svg>
+        Сканировать
+      </div>
+      <div class="hero-count"><b id="statDone">0</b> / <span id="statTotal">0</span> проверено</div>
       <div class="progress-bar"><div id="progressBar"></div></div>
     </div>
 
-    <button id="bigScanBtn" class="btn btn-green btn-big pulse" onclick="openScanner()">📷 Сканировать код</button>
-    <p class="small muted" style="text-align:center;margin:8px 0 10px;">Поднесите этикетку ближе · при плохом свете включите фонарик</p>
-
-    <div class="card">
-      <div class="card-title">Качество сканирования</div>
-      <div style="display:flex;gap:6px;">
-        <button id="qFast" class="qbtn" onclick="setQuality('fast')">⚡ Быстрый</button>
-        <button id="qReliable" class="qbtn" onclick="setQuality('reliable')">🛡 Надёжный (2 скана)</button>
-      </div>
-      <div class="small muted" style="margin-top:6px;" id="qHint"></div>
-    </div>
-
-    <button class="btn btn-blue" style="margin-bottom:12px;" onclick="exportData()">💾 Скачать результаты (Excel)</button>
-
-    <div class="card">
-      <div class="card-title">База данных</div>
-      <button class="btn btn-gray" style="margin-bottom:6px;font-size:13px;" onclick="document.getElementById('fileInput').click()">📁 Загрузить файл с телефона (.xlsx)</button>
-      <button class="btn btn-gray" style="margin-bottom:6px;font-size:13px;" onclick="loadFromServer()">🔄 Перечитать базу из приложения</button>
-      <button class="btn btn-red" style="font-size:13px;" onclick="resetMarks()">🗑 Сбросить отметки сессии</button>
-      <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" class="hidden">
-    </div>
-
-    <div id="nfBlock" class="card hidden" style="background:#fef2f2;border:1px solid #fecaca;">
+    <div id="nfBlock" class="card hidden" style="background:#fef2f2;">
       <div class="card-title" style="color:var(--red);">⚠️ Не найдены в базе: <span id="nfCount">0</span></div>
-      <div id="nfList" class="small" style="font-family:monospace;color:var(--red);max-height:90px;overflow-y:auto;"></div>
+      <div id="nfList" class="small" style="font-family:monospace;color:var(--red);max-height:80px;overflow-y:auto;"></div>
     </div>
 
     <div class="card">
@@ -181,8 +188,9 @@
     </div>
   </section>
 
+  <!-- ===== БАЗА ===== -->
   <section id="view-db" class="hidden">
-    <input id="searchInput" type="search" placeholder="🔍 Поиск: штрихкод, название, код, место…">
+    <input id="searchInput" type="search" placeholder="🔍 Поиск: код, название, место…">
     <div class="chips" id="filterChips">
       <button class="chip active" data-f="all">Все</button>
       <button class="chip" data-f="scanned">✅ Проверено</button>
@@ -197,8 +205,52 @@
     <button id="moreBtn" class="btn btn-gray hidden" onclick="dbShown+=150;renderDb()">Показать ещё</button>
   </section>
 
+  <!-- ===== НАСТРОЙКИ ===== -->
+  <section id="view-settings" class="hidden">
+    <div class="card">
+      <div class="card-title">Сканирование</div>
+      <div class="seg" id="qualSeg">
+        <button data-q="fast" onclick="setQuality('fast')">⚡ Быстрый</button>
+        <button data-q="reliable" onclick="setQuality('reliable')">🛡 Надёжный</button>
+      </div>
+      <div class="small muted" style="margin-top:8px;" id="qHint"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">База данных</div>
+      <div class="set-row" onclick="document.getElementById('fileInput').click()">
+        <div class="set-ico">📁</div>
+        <div class="set-label">Загрузить файл с телефона<span class="set-sub" id="setDbCount"></span></div>
+        <span class="chev">›</span>
+      </div>
+      <div class="set-row" onclick="loadFromServer()">
+        <div class="set-ico">🔄</div>
+        <div class="set-label">Перечитать базу из приложения</div>
+        <span class="chev">›</span>
+      </div>
+      <div class="set-row" onclick="resetMarks()">
+        <div class="set-ico">🗑</div>
+        <div class="set-label">Сбросить отметки сессии<span class="set-sub">Проверено: <span id="setDoneCount">0</span></span></div>
+        <span class="chev">›</span>
+      </div>
+      <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" class="hidden">
+    </div>
+
+    <div class="card">
+      <div class="card-title">Отчёты</div>
+      <div class="set-row" onclick="exportData()">
+        <div class="set-ico">💾</div>
+        <div class="set-label">Скачать результаты (Excel)<span class="set-sub">Сохранит файл и предложит, куда</span></div>
+        <span class="chev">›</span>
+      </div>
+    </div>
+
+    <div class="card small muted" style="text-align:center;">Инвентаризация пресс-форм · v2.0</div>
+  </section>
+
+  <!-- ===== КАРТОЧКА ===== -->
   <section id="view-card" class="hidden">
-    <button class="btn btn-gray" style="width:auto;display:inline-block;padding:8px 14px;font-size:13px;margin-bottom:10px;" onclick="closeCard()">← Назад</button>
+    <button class="btn btn-gray" style="width:auto;display:inline-block;padding:9px 16px;font-size:13px;margin-bottom:10px;" onclick="closeCard()">← Назад</button>
 
     <div id="markedBanner" class="marked-banner hidden">
       <div class="marked-icon" id="markedIcon">✅</div>
@@ -240,11 +292,12 @@
     </div>
   </section>
 
+  <!-- ===== НЕ НАЙДЕНО ===== -->
   <section id="view-notfound" class="hidden">
     <div class="nf-box">
-      <h3 style="margin:0;color:var(--red);">⚠️ Штрихкод не найден в базе</h3>
+      <h3 style="margin:0;color:var(--red);">⚠️ Штрихкод не найден</h3>
       <div class="nf-code" id="nfCode"></div>
-      <p class="small muted" style="margin:0;">Код записан в список «не найденные» — он попадёт в итоговый файл экспорта отдельным листом.</p>
+      <p class="small muted" style="margin:0;">Код попадёт в отчёт отдельным листом.</p>
     </div>
     <button class="btn btn-green btn-big" onclick="scanNext()">📷 Сканировать следующий</button>
     <button class="btn btn-gray" style="margin-top:8px;" onclick="showView('scan','right')">Готово</button>
@@ -253,8 +306,9 @@
 
 <nav>
   <div class="nav-inner">
-    <button id="navScan" class="nav-btn active" onclick="showView('scan')">📷 Сканирование</button>
-    <button id="navDb" class="nav-btn" onclick="showView('db')">📋 База</button>
+    <button id="navScan" class="nav-btn active" onclick="showView('scan')"><span class="nav-ico">📷</span>Скан</button>
+    <button id="navDb" class="nav-btn" onclick="showView('db')"><span class="nav-ico">📋</span>База</button>
+    <button id="navSet" class="nav-btn" onclick="showView('settings')"><span class="nav-ico">⚙️</span>Настройки</button>
   </div>
 </nav>
 
@@ -266,10 +320,12 @@
 /* ================= ДАННЫЕ ================= */
 const LS_KEY='inventoryApp_v8';
 const DB_FILE='inventory.xlsx';
+const PAGE_ORDER=['scan','db','settings'];
 let inventoryData=[], sessionLog=[], notFoundLog=[];
 let currentIndex=-1, cardReturnTab='scan';
+let currentView='scan';
 let dbFilter='all', dbShown=150;
-let qualityMode = localStorage.getItem('invQualityMode') || 'reliable';
+let qualityMode=localStorage.getItem('invQualityMode')||'reliable';
 let lastCode='', lastTime=0;
 
 const $=id=>document.getElementById(id);
@@ -282,9 +338,7 @@ const STATUS_COLORS={ 'В работе':'#16a34a','В ремонте':'#ea580c',
 function statusColor(s){ s=String(s||'').trim(); if(STATUS_COLORS[s]) return STATUS_COLORS[s]; if(s.includes('проверке')) return '#0284c7'; if(s.includes('консерв')) return '#2563eb'; return '#9ca3af'; }
 
 /* ================= СТАРТ ================= */
-window.addEventListener('DOMContentLoaded',()=>{
-  bootCheck(); bindUI(); updateQualityUI(); tryRestore(); setupBackButton(); setupSwipe();
-});
+window.addEventListener('DOMContentLoaded',()=>{ bootCheck(); bindUI(); updateQualityUI(); tryRestore(); setupBackButton(); setupSwipe(); });
 
 function bindUI(){
   $('fileInput').addEventListener('change',onManualFile);
@@ -298,23 +352,68 @@ function bootCheck(){
   let problems=[];
   if(!window.XLSX) problems.push('Excel (lib/xlsx.full.min.js)');
   bar.style.width='100%';
-  if(problems.length){
-    msg.innerHTML='⚠️ Не загружены: '+problems.join(', ');
-  } else {
-    msg.textContent='✅ Готово к работе.';
-    setTimeout(()=>{ $('boot').classList.add('hidden'); },600);
-  }
+  if(problems.length){ msg.innerHTML='⚠️ Не загружены: '+problems.join(', '); }
+  else { msg.textContent='✅ Готово к работе.'; setTimeout(()=>{ $('boot').classList.add('hidden'); },600); }
 }
 
-/* ================= КАЧЕСТВО СКАНИРОВАНИЯ ================= */
-function setQuality(mode){ qualityMode=mode; localStorage.setItem('invQualityMode',mode); updateQualityUI(); }
+/* ================= НАВИГАЦИЯ + АНИМАЦИИ ================= */
+function showView(v,dir){
+  if(!dir){
+    const ci=PAGE_ORDER.indexOf(currentView), ti=PAGE_ORDER.indexOf(v);
+    if(ci>=0&&ti>=0&&ci!==ti) dir=ti>ci?'left':'right';
+  }
+  ['scan','db','settings','card','notfound'].forEach(x=>$('view-'+x).classList.toggle('hidden',x!==v));
+  $('navScan').classList.toggle('active',v==='scan');
+  $('navDb').classList.toggle('active',v==='db');
+  $('navSet').classList.toggle('active',v==='settings');
+  if(v==='db') renderDb();
+  if(v==='settings') renderSettings();
+  const el=$('view-'+v);
+  el.classList.remove('anim-slide-left','anim-slide-right','anim-zoom');
+  void el.offsetWidth;
+  el.classList.add(dir==='left'?'anim-slide-left':dir==='right'?'anim-slide-right':'anim-zoom');
+  currentView=v;
+  window.scrollTo(0,0);
+}
+
+function setupSwipe(){
+  let sx=null,sy=null,st=0;
+  const el=document.querySelector('main');
+  el.addEventListener('touchstart',e=>{
+    if(e.target.closest('input,textarea,.chips,.seg')){sx=null;return;}
+    sx=e.touches[0].clientX; sy=e.touches[0].clientY; st=Date.now();
+  },{passive:true});
+  el.addEventListener('touchend',e=>{
+    if(sx===null)return;
+    const dx=e.changedTouches[0].clientX-sx, dy=e.changedTouches[0].clientY-sy, dt=Date.now()-st;
+    sx=null;
+    if(dt>600||Math.abs(dx)<70||Math.abs(dx)<Math.abs(dy)*1.3)return;
+    const v=currentView;
+    if(v==='card'){ if(dx>0) closeCard(); return; }
+    if(v==='notfound'){ if(dx>0) showView('scan','right'); return; }
+    const i=PAGE_ORDER.indexOf(v);
+    if(dx<0 && i<PAGE_ORDER.length-1) showView(PAGE_ORDER[i+1],'left');
+    else if(dx>0 && i>0) showView(PAGE_ORDER[i-1],'right');
+  },{passive:true});
+}
+
+function setupBackButton(){
+  if(!isCapacitor()) return;
+  const App=window.Capacitor.Plugins.App; if(!App) return;
+  App.addListener('backButton',()=>{
+    const v=currentView;
+    if(v==='card') closeCard();
+    else if(v==='notfound'||v==='db'||v==='settings') showView('scan','right');
+    else App.exitApp();
+  });
+}
+
+/* ================= КАЧЕСТВО ================= */
+function setQuality(m){ qualityMode=m; localStorage.setItem('invQualityMode',m); updateQualityUI(); }
 function updateQualityUI(){
-  const fast=$('qFast'), rel=$('qReliable'), hint=$('qHint');
-  if(fast) fast.classList.toggle('active',qualityMode==='fast');
-  if(rel) rel.classList.toggle('active',qualityMode==='reliable');
-  if(hint) hint.textContent = qualityMode==='reliable'
-    ? 'Код сканируется дважды и сверяется — почти исключает ошибки.'
-    : 'Одно сканирование — быстрее, но возможны ошибки.';
+  document.querySelectorAll('#qualSeg button').forEach(b=>b.classList.toggle('active',b.dataset.q===qualityMode));
+  const h=$('qHint');
+  if(h) h.textContent = qualityMode==='reliable' ? 'Код сканируется дважды и сверяется — меньше ошибок.' : 'Одно сканирование — быстрее.';
 }
 
 /* ================= ЗАГРУЗКА БАЗЫ ================= */
@@ -328,113 +427,43 @@ function tryRestore(){
   }catch(e){}
   loadFromServer();
 }
-function setSource(t){ const el=$('srcLabel'); if(el) el.textContent=t; }
-
 async function loadFromServer(){
   try{
     const res=await fetch(DB_FILE+'?t='+Date.now(),{cache:'no-store'});
     if(!res.ok) throw new Error('HTTP '+res.status);
-    processWorkbook(await res.arrayBuffer(),'База из приложения');
-  }catch(e){
-    toast('База не найдена. Загрузите файл с телефона.','err');
-  }
+    processWorkbook(await res.arrayBuffer());
+  }catch(e){ toast('База не найдена. Загрузите файл в настройках.','err'); }
 }
-
 function onManualFile(e){
   const file=e.target.files[0]; if(!file) return;
   const done=inventoryData.filter(r=>r._scanned).length;
-  if(done>0 && !confirm('В базе уже есть '+done+' отметок. Загрузка нового файла их сбросит. Продолжить?')){ e.target.value=''; return; }
+  if(done>0 && !confirm('Есть '+done+' отметок. Новый файл их сбросит. Продолжить?')){ e.target.value=''; return; }
   const reader=new FileReader();
-  reader.onload=ev=>{ try{ processWorkbook(ev.target.result,'Файл: '+file.name); }catch(err){ toast('Ошибка чтения: '+err.message,'err'); } };
-  reader.onerror=()=>{ toast('Не удалось прочитать файл','err'); };
-  reader.readAsArrayBuffer(file);
-  e.target.value='';
+  reader.onload=ev=>{ try{ processWorkbook(ev.target.result); }catch(err){ toast('Ошибка чтения: '+err.message,'err'); } };
+  reader.onerror=()=>toast('Не удалось прочитать файл','err');
+  reader.readAsArrayBuffer(file); e.target.value='';
 }
-
-function processWorkbook(buf,sourceLabel){
+function processWorkbook(buf){
   const wb=XLSX.read(new Uint8Array(buf),{type:'array'});
   let rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:'',raw:false});
   rows=rows.filter(r=>{ const b=getBarcode(r).toLowerCase(); return b && b!=='barcode' && b!=='штрихкод'; });
   rows.forEach(r=>{
     if(r.notes===undefined && r['Примечание']!==undefined){ r.notes=r['Примечание']; delete r['Примечание']; }
-    r._baseNote=String(r.notes||'');
-    r['Дата проверки']='';
+    r._baseNote=String(r.notes||''); r['Дата проверки']='';
   });
   inventoryData=rows; sessionLog=[]; notFoundLog=[];
   persist(); afterDataReady();
   toast('База загружена: '+rows.length+' позиций','ok');
 }
-
 function afterDataReady(){ updateStats(); renderRecent(); renderNF(); }
 function persist(){ try{ localStorage.setItem(LS_KEY,JSON.stringify({data:inventoryData,log:sessionLog,nf:notFoundLog})); }catch(e){} }
 
-/* ================= НАВИГАЦИЯ + СВАЙПЫ ================= */
-function showView(v,dir){
-  ['scan','db','card','notfound'].forEach(x=>$('view-'+x).classList.toggle('hidden',x!==v));
-  $('navScan').classList.toggle('active',v==='scan');
-  $('navDb').classList.toggle('active',v==='db');
-  if(v==='db') renderDb();
-  const el=$('view-'+v);
-  el.classList.remove('anim-fade','anim-slide-left','anim-slide-right');
-  void el.offsetWidth;
-  if(dir==='left') el.classList.add('anim-slide-left');
-  else if(dir==='right') el.classList.add('anim-slide-right');
-  else el.classList.add('anim-fade');
-  window.scrollTo(0,0);
-}
-
-function getCurrentMainView(){
-  if(!$('view-card').classList.contains('hidden')) return 'card';
-  if(!$('view-notfound').classList.contains('hidden')) return 'notfound';
-  if(!$('view-db').classList.contains('hidden')) return 'db';
-  return 'scan';
-}
-
-function setupSwipe(){
-  let sx=null, sy=null, st=0;
-  const el=document.querySelector('main');
-  el.addEventListener('touchstart',e=>{
-    if(e.target.closest('input,textarea,.chips')){ sx=null; return; }
-    sx=e.touches[0].clientX; sy=e.touches[0].clientY; st=Date.now();
-  },{passive:true});
-  el.addEventListener('touchend',e=>{
-    if(sx===null) return;
-    const dx=e.changedTouches[0].clientX-sx;
-    const dy=e.changedTouches[0].clientY-sy;
-    const dt=Date.now()-st;
-    sx=null;
-    if(dt>600) return;
-    if(Math.abs(dx)<70) return;
-    if(Math.abs(dx)<Math.abs(dy)*1.3) return;
-    const v=getCurrentMainView();
-    if(v==='scan' && dx<0) showView('db','left');
-    else if(v==='db' && dx>0) showView('scan','right');
-    else if(v==='card' && dx>0) closeCard();
-    else if(v==='notfound' && dx>0) showView('scan','right');
-  },{passive:true});
-}
-
-/* ================= КНОПКА НАЗАД / ВЫХОД ================= */
-function setupBackButton(){
-  if(!isCapacitor()) return;
-  const App=window.Capacitor.Plugins.App;
-  if(!App) return;
-  App.addListener('backButton',()=>{
-    const v=getCurrentMainView();
-    if(v==='card'){ closeCard(); }
-    else if(v==='notfound'){ showView('scan','right'); }
-    else if(v==='db'){ showView('scan','right'); }
-    else { App.exitApp(); }
-  });
-}
-
-/* ================= СКАНЕР (ML Kit) ================= */
+/* ================= СКАНЕР ================= */
 function openScanner(){
   if(!inventoryData.length){ toast('Сначала загрузите базу','err'); return; }
-  if(isCapacitor()){ startCapacitorScanner(); }
-  else { toast('Сканирование доступно только в мобильном приложении','err'); }
+  if(isCapacitor()) startCapacitorScanner();
+  else toast('Сканирование доступно только в приложении','err');
 }
-
 async function startCapacitorScanner(){
   const BS=window.Capacitor.Plugins && window.Capacitor.Plugins.BarcodeScanner;
   if(!BS){ toast('Сканер недоступен','err'); return; }
@@ -448,41 +477,29 @@ async function startCapacitorScanner(){
       if(s==='NOT_INSTALLED'||s===0){ toast('Устанавливаю модуль сканирования…','info'); await BS.installGoogleBarcodeScannerModule(); }
     }catch(e){}
     await scanLoop(BS);
-  }catch(e){
-    console.error('Scan error:',e);
-    toast('Ошибка сканера: '+((e&&e.message)||e),'err');
-  }
+  }catch(e){ toast('Ошибка сканера: '+((e&&e.message)||e),'err'); }
 }
-
 async function scanLoop(BS){
   const needDouble=(qualityMode==='reliable');
   let firstCode=null;
   while(true){
     let code=null;
-    try{ const result=await BS.scan(); code=extractCode(result); }catch(e){}
+    try{ const r=await BS.scan(); code=extractCode(r); }catch(e){}
     if(!code){ toast('Сканирование отменено','info'); return; }
     if(!needDouble){ handleDetected(code); return; }
-    if(firstCode===null){
-      firstCode=code;
-      toast('Подтвердите: отсканируйте тот же код ещё раз','info');
-      continue;
-    } else {
+    if(firstCode===null){ firstCode=code; toast('Подтвердите: отсканируйте ещё раз','info'); continue; }
+    else{
       if(code===firstCode){ handleDetected(code); return; }
-      else { toast('Коды не совпадают! Попробуйте снова','err'); firstCode=null; continue; }
+      else { toast('Коды не совпадают! Ещё раз','err'); firstCode=null; continue; }
     }
   }
 }
-
-function extractCode(result){
-  if(!result) return null;
-  if(Array.isArray(result.barcodes) && result.barcodes.length>0){
-    const b=result.barcodes[0];
-    return b.rawValue||b.displayValue||null;
-  }
-  if(result.barcode) return result.barcode.rawValue||result.barcode.displayValue||null;
+function extractCode(r){
+  if(!r) return null;
+  if(Array.isArray(r.barcodes)&&r.barcodes.length){ const b=r.barcodes[0]; return b.rawValue||b.displayValue||null; }
+  if(r.barcode) return r.barcode.rawValue||r.barcode.displayValue||null;
   return null;
 }
-
 function handleDetected(code){
   code=String(code||'').trim(); if(!code) return;
   const now=Date.now();
@@ -496,8 +513,7 @@ function handleDetected(code){
 /* ================= КАРТОЧКА ================= */
 function openCard(i,fromScan){
   currentIndex=i; cardReturnTab=fromScan?'scan':'db';
-  const r=inventoryData[i];
-  const color=statusColor(r.status);
+  const r=inventoryData[i]; const color=statusColor(r.status);
   const box=$('cardBox');
   box.style.borderLeftColor=color; box.style.background=tint(color,0.07);
   $('cName').textContent=r.product_name||'(без названия)';
@@ -508,65 +524,55 @@ function openCard(i,fromScan){
   $('cNotes').textContent=r.notes||'—';
   $('customNote').value='';
   const badge=$('cardScannedBadge');
-  if(r._scanned){ badge.textContent='✅ Проверено: '+r._scannedAt; badge.classList.remove('hidden'); }
-  else badge.classList.add('hidden');
-  if(r._scanned && r._lastNote){ showMarkedBanner(r._lastNote,r._scannedAt,r._lastType); }
-  else $('markedBanner').classList.add('hidden');
-  $('cardActions').classList.remove('hidden');
-  $('cardMarked').classList.add('hidden');
+  if(r._scanned){ badge.textContent='✅ Проверено: '+r._scannedAt; badge.classList.remove('hidden'); } else badge.classList.add('hidden');
+  if(r._scanned && r._lastNote) showMarkedBanner(r._lastNote,r._scannedAt,r._lastType); else $('markedBanner').classList.add('hidden');
+  $('cardActions').classList.remove('hidden'); $('cardMarked').classList.add('hidden');
   showView('card');
 }
-
 function showMarkedBanner(note,ts,type){
-  const b=$('markedBanner'); const isOk=(type==='ok');
-  b.className='marked-banner '+(isOk?'ok':'issue');
-  $('markedIcon').textContent=isOk?'✅':'⚠️';
-  $('markedTitle').textContent=isOk?'ПРОВЕРЕНО':'НЕСООТВЕТСТВИЕ';
+  const b=$('markedBanner'); const ok=(type==='ok');
+  b.className='marked-banner '+(ok?'ok':'issue');
+  $('markedIcon').textContent=ok?'✅':'⚠️';
+  $('markedTitle').textContent=ok?'ПРОВЕРЕНО':'НЕСООТВЕТСТВИЕ';
   $('markedNote').textContent=note; $('markedTime').textContent=ts;
   b.classList.remove('hidden');
 }
-
 function closeCard(){ showView(cardReturnTab,'right'); }
-function markCustom(){ const t=$('customNote').value.trim(); if(!t){ toast('Введите текст примечания','err'); return; } markItem(t); }
-
+function markCustom(){ const t=$('customNote').value.trim(); if(!t){ toast('Введите примечание','err'); return; } markItem(t); }
 function markItem(noteText){
   if(currentIndex<0) return;
   const r=inventoryData[currentIndex];
   const now=new Date();
   const ts=now.toLocaleDateString('ru-RU')+' '+now.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
-  const isOk=(noteText==='Инвентаризация пройдена');
+  const ok=(noteText==='Инвентаризация пройдена');
   r.notes=(r._baseNote? r._baseNote+' → ':'')+noteText;
   r['Дата проверки']=ts;
-  r._scanned=true; r._scannedAt=ts; r._lastNote=noteText; r._lastType=isOk?'ok':'issue';
-  sessionLog.unshift({i:currentIndex,t:ts,note:noteText,type:isOk?'ok':'issue'});
+  r._scanned=true; r._scannedAt=ts; r._lastNote=noteText; r._lastType=ok?'ok':'issue';
+  sessionLog.unshift({i:currentIndex,t:ts,note:noteText,type:ok?'ok':'issue'});
   if(sessionLog.length>300) sessionLog.pop();
   persist(); updateStats(); renderRecent();
-  $('cardActions').classList.add('hidden');
-  $('cardMarked').classList.remove('hidden');
-  showMarkedBanner(noteText,ts,isOk?'ok':'issue');
-  const badge=$('cardScannedBadge');
-  badge.textContent='✅ Проверено: '+ts; badge.classList.remove('hidden');
+  $('cardActions').classList.add('hidden'); $('cardMarked').classList.remove('hidden');
+  showMarkedBanner(noteText,ts,ok?'ok':'issue');
+  const badge=$('cardScannedBadge'); badge.textContent='✅ Проверено: '+ts; badge.classList.remove('hidden');
   $('cNotes').textContent=r.notes;
-  toast(isOk?'Сохранено: форма на месте':'Сохранено: '+noteText,isOk?'ok':'info');
+  toast(ok?'Сохранено: форма на месте':'Сохранено: '+noteText, ok?'ok':'info');
 }
-
 function scanNext(){ showView('scan'); openScanner(); }
 
 /* ================= НЕ НАЙДЕНО ================= */
 function showNotFound(code){
   if(!notFoundLog.some(x=>x.code===code)){ notFoundLog.push({code,t:new Date().toLocaleString('ru-RU')}); persist(); }
-  $('nfCode').textContent=code;
-  renderNF(); showView('notfound');
+  $('nfCode').textContent=code; renderNF(); showView('notfound');
 }
 function renderNF(){
   const b=$('nfBlock');
   if(!notFoundLog.length){ b.classList.add('hidden'); return; }
   b.classList.remove('hidden');
   $('nfCount').textContent=notFoundLog.length;
-  $('nfList').innerHTML=notFoundLog.map(x=>'<div>'+esc(x.code)+' <span style="opacity:.6;">· '+esc(x.t)+'</span></div>').join('');
+  $('nfList').innerHTML=notFoundLog.map(x=>'<div>'+esc(x.code)+'</div>').join('');
 }
 
-/* ================= БАЗА / ПОИСК ================= */
+/* ================= БАЗА ================= */
 function styleChips(){ document.querySelectorAll('#filterChips .chip').forEach(c=>c.classList.toggle('active',c.dataset.f===dbFilter)); }
 function passFilter(r){
   switch(dbFilter){
@@ -593,7 +599,7 @@ function renderDb(){
   const slice=filtered.slice(0,dbShown);
   $('dbList').innerHTML=slice.map(({r,i})=>{
     const color=statusColor(r.status);
-    return `<div class="db-row" data-i="${i}" style="border-left-color:${color};">
+    return `<div class="db-row" data-i="${i}" style="border-left-color:${color};background:${tint(color,0.08)};">
       <div class="db-top">
         <div class="db-name">${esc(r.product_name||'(без названия)')}</div>
         ${r._scanned?'<span class="db-scanned">✅</span>':''}
@@ -614,101 +620,77 @@ document.addEventListener('click',e=>{
   const rec=e.target.closest('[data-recent]'); if(rec){ openCard(+rec.dataset.i,false); }
 });
 
-/* ================= СТАТИСТИКА ================= */
+/* ================= СТАТИСТИКА / НАСТРОЙКИ ================= */
 function updateStats(){
   const total=inventoryData.length;
   const done=inventoryData.filter(r=>r._scanned).length;
-  $('hdrStats').textContent=total? done+'/'+total : '—';
+  $('hdrStats').textContent=done+'/'+total;
   $('statDone').textContent=done; $('statTotal').textContent=total;
-  $('progressBar').style.width=total? (done/total*100).toFixed(1)+'%':'0%';
+  $('progressBar').style.width=total?(done/total*100).toFixed(1)+'%':'0%';
 }
 function renderRecent(){
   const el=$('recentList');
-  if(!sessionLog.length){ el.innerHTML='<div class="muted small">Пока ничего не отсканировано</div>'; return; }
-  el.innerHTML=sessionLog.slice(0,30).map(x=>{
+  if(!sessionLog.length){ el.innerHTML='<div class="muted small">Пока пусто — нажмите «Сканировать».</div>'; return; }
+  el.innerHTML=sessionLog.slice(0,15).map(x=>{
     const r=inventoryData[x.i]; if(!r) return '';
-    const isOk=(x.type==='ok');
-    const mark=isOk?'<span class="mark">✅</span>':'<span class="mark">⚠️</span>';
-    return `<div class="recent-row" data-recent="1" data-i="${x.i}">${mark}
+    const ok=(x.type==='ok');
+    return `<div class="recent-row" data-recent="1" data-i="${x.i}">
+      <span class="mark">${ok?'✅':'⚠️'}</span>
       <div class="recent-info">
         <div class="recent-name">${esc(r.product_name||'')}</div>
-        <div class="recent-note ${isOk?'':'issue-text'}">${esc(x.note)} · ${esc(x.t)}</div>
+        <div class="recent-note ${ok?'':'issue-text'}">${esc(x.note)} · ${esc(x.t)}</div>
       </div>
     </div>`;
   }).join('');
 }
+function renderSettings(){
+  updateQualityUI();
+  $('setDbCount').textContent='Сейчас: '+inventoryData.length+' позиций';
+  $('setDoneCount').textContent=inventoryData.filter(r=>r._scanned).length;
+}
 
 /* ================= СБРОС / ЭКСПОРТ ================= */
 function resetMarks(){
-  if(!confirm('Сбросить все отметки этой сессии?')) return;
+  if(!confirm('Сбросить все отметки сессии?')) return;
   inventoryData.forEach(r=>{ r.notes=r._baseNote; r['Дата проверки']=''; delete r._scanned; delete r._scannedAt; delete r._lastNote; delete r._lastType; });
   sessionLog=[]; notFoundLog=[];
-  persist(); updateStats(); renderRecent(); renderNF();
+  persist(); updateStats(); renderRecent(); renderNF(); renderSettings();
   toast('Отметки сброшены','ok');
 }
-
-function arrayBufferToBase64(buffer){
-  let binary=''; const bytes=new Uint8Array(buffer);
-  for(let i=0;i<bytes.byteLength;i++) binary+=String.fromCharCode(bytes[i]);
-  return window.btoa(binary);
-}
-
+function arrayBufferToBase64(b){ let s=''; const u=new Uint8Array(b); for(let i=0;i<u.byteLength;i++) s+=String.fromCharCode(u[i]); return window.btoa(s); }
 async function exportData(){
   if(!inventoryData.length){ toast('Нет данных для экспорта','err'); return; }
   const d=new Date(),p=n=>String(n).padStart(2,'0');
-  const defaultName='Инвентаризация_'+d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'_'+p(d.getHours())+'-'+p(d.getMinutes());
-  let filename=defaultName;
+  const def='Инвентаризация_'+d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'_'+p(d.getHours())+'-'+p(d.getMinutes());
+  let filename=def;
   if(isCapacitor()){
-    const input=prompt('Имя файла отчёта:',defaultName);
-    if(input===null) return;
-    if(input.trim()) filename=input.trim();
+    const inp=prompt('Имя файла отчёта:',def);
+    if(inp===null) return;
+    if(inp.trim()) filename=inp.trim();
     if(!/\.xlsx$/i.test(filename)) filename+='.xlsx';
   }
   const rows=inventoryData.map(r=>{ const c={}; for(const k of Object.keys(r)) if(!k.startsWith('_')) c[k]=r[k]; return c; });
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),'Инвентаризация');
-  if(notFoundLog.length) XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(notFoundLog.map(x=>({'Штрихкод':x.code,'Время':x.t}))),'Не найдены в базе');
-
+  if(notFoundLog.length) XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(notFoundLog.map(x=>({'Штрихкод':x.code,'Время':x.t}))),'Не найдены');
   if(isCapacitor()){
     try{
-      const Filesystem=window.Capacitor.Plugins.Filesystem;
-      const Share=window.Capacitor.Plugins.Share;
-      const wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'});
-      const base64=arrayBufferToBase64(wbout);
-      try{ await Filesystem.deleteFile({path:filename,directory:'DOCUMENTS'}); }catch(e){}
-      await Filesystem.writeFile({path:filename,data:base64,directory:'DOCUMENTS',recursive:true});
-      const uriRes=await Filesystem.getUri({path:filename,directory:'DOCUMENTS'});
+      const F=window.Capacitor.Plugins.Filesystem, S=window.Capacitor.Plugins.Share;
+      const out=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+      try{ await F.deleteFile({path:filename,directory:'DOCUMENTS'}); }catch(e){}
+      await F.writeFile({path:filename,data:arrayBufferToBase64(out),directory:'DOCUMENTS',recursive:true});
+      const u=await F.getUri({path:filename,directory:'DOCUMENTS'});
       toast('Сохранено: '+filename,'ok');
-      try{
-        await Share.share({title:'Отчёт инвентаризации',url:uriRes.uri,dialogMessage:'Сохраните или отправьте файл: '+filename});
-      }catch(e){}
-    }catch(e){
-      console.error('Export error:',e);
-      toast('Ошибка экспорта: '+((e&&e.message)||e),'err');
-    }
-  } else {
-    XLSX.writeFile(wb,filename);
-    toast('Файл выгружен','ok');
-  }
+      try{ await S.share({title:'Отчёт инвентаризации',url:u.uri,dialogMessage:'Сохраните или отправьте: '+filename}); }catch(e){}
+    }catch(e){ toast('Ошибка экспорта: '+((e&&e.message)||e),'err'); }
+  } else { XLSX.writeFile(wb,filename); toast('Файл выгружен','ok'); }
 }
 
-/* ================= ЗВУК / ВИБРАЦИЯ / ТОСТ ================= */
-function beep(){
-  try{ const ctx=new (window.AudioContext||window.webkitAudioContext)();
-    const o=ctx.createOscillator(),g=ctx.createGain();
-    o.connect(g);g.connect(ctx.destination);
-    o.frequency.value=1250;o.type='square';g.gain.value=0.06;
-    o.start(); setTimeout(()=>{o.stop();ctx.close();},140);
-  }catch(e){}
-}
+/* ================= ЗВУК / ТОСТ ================= */
+function beep(){ try{ const c=new (window.AudioContext||window.webkitAudioContext)(); const o=c.createOscillator(),g=c.createGain(); o.connect(g);g.connect(c.destination); o.frequency.value=1250;o.type='square';g.gain.value=.06; o.start(); setTimeout(()=>{o.stop();c.close();},140);}catch(e){} }
 function vib(){ if(navigator.vibrate) navigator.vibrate(180); }
 let toastTimer;
-function toast(msg,type){
-  const t=$('toast');
-  t.textContent=msg; t.className=type||'info';
-  clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>t.classList.add('hidden'),2500);
-}
+function toast(m,t){ const el=$('toast'); el.textContent=m; el.className=t||'info'; clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.add('hidden'),2500); }
 </script>
 </body>
 </html>
