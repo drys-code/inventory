@@ -489,46 +489,65 @@ function currentTrack(){
   return v && v.srcObject ? v.srcObject.getVideoTracks()[0] : null;
 }
 async function startCapacitorScanner(){
-  const BS = window.Capacitor.Plugins && window.Capacitor.Plugins.BarcodeScanner;
+  const Plugins = window.Capacitor && window.Capacitor.Plugins;
+  const BS = Plugins && Plugins.BarcodeScanner;
   if(!BS){ toast('ML Kit сканер не найден','err'); return; }
-  let processed=false;
-  const done=(code)=>{
-    if(processed) return;
-    processed=true; scanningActive=false;
-    if(code){ lastCode=''; lastTime=0; handleDetected(code); }
-  };
+
   try{
-    // 1) модуль Google Barcode Scanner (ставится один раз, нужен интернет при первом запуске)
-    try{
-      const st=await BS.googleBarcodeScannerModuleInstallState();
-      const s=st.googleBarcodeScannerModuleInstallState;
-      if(s==='NOT_INSTALLED'||s===0){
-        toast('Первый запуск: устанавливаю модуль сканирования…','info');
-        await BS.installGoogleBarcodeScannerModule();
+    // 1. Запрос разрешения
+    const perm = await BS.requestPermissions();
+    const cam = perm && (perm.camera || perm['public.camera']);
+    if(cam && cam !== 'granted' && cam !== 'prompt-with-rationale'){
+      toast('Нет доступа к камере','err'); return;
+    }
+
+    // 2. Запускаем встроенный ML-Kit сканер (НЕ Google Play Module)
+    //    Это надёжнее и быстрее возвращает результат
+    const listener = await BS.addListener('barcodeScanned', (res) => {
+      const code = res && res.barcode ? (res.barcode.rawValue || res.barcode.displayValue) : null;
+      if(code){
+        listener.remove();
+        BS.stopScanning().catch(()=>{});
+        beep(); if(navigator.vibrate) navigator.vibrate(180);
+        handleDetected(code);
       }
-    }catch(e){}
-    // 2) разрешение камеры
-    try{
-      const p=await BS.requestPermissions();
-      const cam=(p&&p.camera)||'';
-      if(cam && cam!=='granted' && cam!=='prompt-with-rationale'){ toast('Нет доступа к камере','err'); return; }
-    }catch(e){}
-    // 3) слушатель (событийная модель)
-    try{
-      await BS.addListener('barcodeScanned',(res)=>{
-        const c=res&&res.barcode?(res.barcode.rawValue||res.barcode.displayValue):null;
-        done(c);
-      });
-    }catch(e){}
-    // 4) запуск нативного сканера
-    scanningActive=true;
+    });
+
+    // 3. Параметры сканирования
+    const options = {
+      lensMode: 0,          // 0 = задняя камера
+      scanFormats: [
+        'EAN_13','EAN_8','UPC_A','UPC_E',
+        'CODE_128','CODE_39','CODE_93','ITF','CODABAR',
+        'DATA_MATRIX','QR_CODE','AZTEC','PDF_417'
+      ],
+      googleBarcodeScannerModule: false  // ← ВАЖНО: отключаем Google Play модуль
+    };
+
     toast('Сканируйте штрихкод…','info');
-    const res=await BS.scan();
-    const code=res&&res.barcode?(res.barcode.rawValue||res.barcode.displayValue):null;
-    done(code);
-    if(!code){ toast('Сканирование отменено','info'); }
+    const result = await BS.startScanning(options);
+    // если startScanning вернул результат напрямую
+    if(result && result.barcode){
+      const code = result.barcode.rawValue || result.barcode.displayValue;
+      if(code){
+        await listener.remove();
+        beep(); if(navigator.vibrate) navigator.vibrate(180);
+        handleDetected(code);
+        return;
+      }
+    }
+    // если сканер завершился без кода (пользователь закрыл) — ничего не делаем,
+    // listener ещё работает и поймает следующее событие
   }catch(e){
-    scanningActive=false;
+    console.error('Scan error:', e);
+    // Пробуем запасной вариант — простой scan() без Google Play
+    try{
+      const r2 = await BS.scan({ googleBarcodeScannerModule: false });
+      if(r2 && r2.barcode && !r2.cancelled){
+        const code = r2.barcode.rawValue || r2.barcode.displayValue;
+        if(code){ beep(); if(navigator.vibrate) navigator.vibrate(180); handleDetected(code); return; }
+      }
+    }catch(e2){}
     toast('Ошибка сканера: '+((e&&e.message)||e),'err');
   }
 }
