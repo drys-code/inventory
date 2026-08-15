@@ -18,7 +18,7 @@ jobs:
       - name: Установка зависимостей
         run: npm install
 
-      - name: Подготовка www (копируем веб-приложение)
+      - name: Подготовка www
         run: |
           mkdir -p www/lib
           cp index.html www/
@@ -36,13 +36,11 @@ jobs:
       - name: Добавление Android-платформы
         run: npx cap add android
 
-      - name: Добавление разрешения CAMERA в манифест
+      - name: Разрешение CAMERA в манифесте
         run: |
           MANIFEST="android/app/src/main/AndroidManifest.xml"
-          # Добавляем разрешение камеры сразу после тега <manifest>
           sed -i '/<manifest/a\    <uses-permission android:name="android.permission.CAMERA" />' "$MANIFEST"
           sed -i '/<manifest/a\    <uses-feature android:name="android.hardware.camera" android:required="false" />' "$MANIFEST"
-          cat "$MANIFEST"
 
       - name: Синхронизация (веб + плагины)
         run: npx cap sync android
