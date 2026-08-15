@@ -9,11 +9,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Установка зависимостей
         run: npm install
@@ -26,7 +26,7 @@ jobs:
           cp -r lib/. www/lib/
           [ -f manifest.json ] && cp manifest.json www/ || true
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 17
@@ -35,6 +35,14 @@ jobs:
 
       - name: Добавление Android-платформы
         run: npx cap add android
+
+      - name: Добавление разрешения CAMERA в манифест
+        run: |
+          MANIFEST="android/app/src/main/AndroidManifest.xml"
+          # Добавляем разрешение камеры сразу после тега <manifest>
+          sed -i '/<manifest/a\    <uses-permission android:name="android.permission.CAMERA" />' "$MANIFEST"
+          sed -i '/<manifest/a\    <uses-feature android:name="android.hardware.camera" android:required="false" />' "$MANIFEST"
+          cat "$MANIFEST"
 
       - name: Синхронизация (веб + плагины)
         run: npx cap sync android
@@ -46,7 +54,7 @@ jobs:
           ./gradlew assembleDebug --no-daemon
 
       - name: Публикация APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: inventory-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
