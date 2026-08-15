@@ -534,6 +534,7 @@ async function startCapacitorScanner(){
 }
 async function openScanner(){
   if(!inventoryData.length){ toast('Сначала загрузите базу','err'); return; }
+   if(isCapacitor()){ startCapacitorScanner(); return; } 
   $('scanOverlay').classList.remove('hidden');
   torchOn=false; $('torchBtn').classList.remove('torch-on');
   $('zoomWrap').classList.add('hidden');
