@@ -510,23 +510,19 @@ async function startCapacitorScanner(){
       }
     }catch(e){}
 
-    // 3. Запуск сканирования — ПРАВИЛЬНЫЙ метод scan()
+    // 3. Запуск сканирования
     scanningActive = true;
     const result = await BS.scan();
 
-    // ===== ВРЕМЕННАЯ ОТЛАДКА =====
-    // Пришлите мне текст из этого окна — по нему пойму, что возвращает сканер
-    const dbg =
-      'barcode: ' + JSON.stringify(result && result.barcode) + '\n' +
-      'cancelled: ' + (result && result.cancelled) + '\n' +
-      'ключи результата: ' + (result ? Object.keys(result).join(', ') : 'пусто');
-    alert('ЧТО ВЕРНУЛ СКАНЕР:\n\n' + dbg);
-    // ==============================
-
-    // 4. Достаём код
+    // 4. Достаём код — плагин возвращает МАССИВ barcodes
     let code = null;
-    if(result && result.barcode){
-      code = result.barcode.rawValue || result.barcode.displayValue;
+    if(result){
+      if(Array.isArray(result.barcodes) && result.barcodes.length > 0){
+        const b = result.barcodes[0];
+        code = b.rawValue || b.displayValue;
+      } else if(result.barcode){
+        code = result.barcode.rawValue || result.barcode.displayValue;
+      }
     }
 
     if(code){
