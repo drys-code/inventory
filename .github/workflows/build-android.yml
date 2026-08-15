@@ -24,7 +24,22 @@ jobs:
           cp index.html www/
           cp inventory.xlsx www/
           cp -r lib/. www/lib/
-          [ -f manifest.json ] && cp manifest.json www/ || true
+
+      - name: Подготовка иконки (квадрат 1024×1024)
+        run: |
+          mkdir -p assets
+          [ -f icon.png ] && mv -f icon.png assets/icon.png
+          [ -f icon-source.png ] && mv -f icon-source.png assets/icon-source.png
+          if [ -f assets/icon-source.png ]; then
+            magick assets/icon-source.png -trim +repage -resize 1024x1024 \
+              -gravity center -background "#1e3a8a" -extent 1024x1024 assets/icon.png
+          fi
+          if [ -f assets/icon.png ]; then
+            cp -f assets/icon.png assets/icon-only.png
+            cp -f assets/icon.png assets/splash.png
+          else
+            echo "Иконка не найдена — останется стандартная"
+          fi
 
       - uses: actions/setup-java@v5
         with:
@@ -36,14 +51,20 @@ jobs:
       - name: Добавление Android-платформы
         run: npx cap add android
 
+      - name: Генерация иконок приложения
+        run: |
+          if [ -f assets/icon.png ]; then
+            npx @capacitor/assets generate --android || echo "WARN: не удалось сгенерировать иконки"
+          fi
+
+      - name: Синхронизация (веб + плагины)
+        run: npx cap sync android
+
       - name: Разрешение CAMERA в манифесте
         run: |
           MANIFEST="android/app/src/main/AndroidManifest.xml"
           sed -i '/<manifest/a\    <uses-permission android:name="android.permission.CAMERA" />' "$MANIFEST"
           sed -i '/<manifest/a\    <uses-feature android:name="android.hardware.camera" android:required="false" />' "$MANIFEST"
-
-      - name: Синхронизация (веб + плагины)
-        run: npx cap sync android
 
       - name: Сборка APK
         run: |
