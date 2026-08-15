@@ -688,7 +688,12 @@ async function exportData(){
 function beep(){ try{ const c=new (window.AudioContext||window.webkitAudioContext)(); const o=c.createOscillator(),g=c.createGain(); o.connect(g);g.connect(c.destination); o.frequency.value=1250;o.type='square';g.gain.value=.06; o.start(); setTimeout(()=>{o.stop();c.close();},140);}catch(e){} }
 function vib(){ if(navigator.vibrate) navigator.vibrate(180); }
 let toastTimer;
-function toast(m,t){ const el=$('toast'); el.textContent=m; el.className=t||'info'; clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.add('hidden'),2500); }
+function toast(m,t,ms){
+  const el=$('toast');
+  el.textContent=m; el.className=t||'info';
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>el.classList.add('hidden'), ms||2500);
+}
 </script>
 </body>
 </html>
