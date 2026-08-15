@@ -488,7 +488,50 @@ function currentTrack(){
   const v=getActiveVideoEl();
   return v && v.srcObject ? v.srcObject.getVideoTracks()[0] : null;
 }
-
+async function startCapacitorScanner(){
+  const BS = window.Capacitor.Plugins && window.Capacitor.Plugins.BarcodeScanner;
+  if(!BS){ toast('ML Kit сканер не найден','err'); return; }
+  let processed=false;
+  const done=(code)=>{
+    if(processed) return;
+    processed=true; scanningActive=false;
+    if(code){ lastCode=''; lastTime=0; handleDetected(code); }
+  };
+  try{
+    // 1) модуль Google Barcode Scanner (ставится один раз, нужен интернет при первом запуске)
+    try{
+      const st=await BS.googleBarcodeScannerModuleInstallState();
+      const s=st.googleBarcodeScannerModuleInstallState;
+      if(s==='NOT_INSTALLED'||s===0){
+        toast('Первый запуск: устанавливаю модуль сканирования…','info');
+        await BS.installGoogleBarcodeScannerModule();
+      }
+    }catch(e){}
+    // 2) разрешение камеры
+    try{
+      const p=await BS.requestPermissions();
+      const cam=(p&&p.camera)||'';
+      if(cam && cam!=='granted' && cam!=='prompt-with-rationale'){ toast('Нет доступа к камере','err'); return; }
+    }catch(e){}
+    // 3) слушатель (событийная модель)
+    try{
+      await BS.addListener('barcodeScanned',(res)=>{
+        const c=res&&res.barcode?(res.barcode.rawValue||res.barcode.displayValue):null;
+        done(c);
+      });
+    }catch(e){}
+    // 4) запуск нативного сканера
+    scanningActive=true;
+    toast('Сканируйте штрихкод…','info');
+    const res=await BS.scan();
+    const code=res&&res.barcode?(res.barcode.rawValue||res.barcode.displayValue):null;
+    done(code);
+    if(!code){ toast('Сканирование отменено','info'); }
+  }catch(e){
+    scanningActive=false;
+    toast('Ошибка сканера: '+((e&&e.message)||e),'err');
+  }
+}
 async function openScanner(){
   if(!inventoryData.length){ toast('Сначала загрузите базу','err'); return; }
   $('scanOverlay').classList.remove('hidden');
