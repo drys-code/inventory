@@ -489,66 +489,55 @@ function currentTrack(){
   return v && v.srcObject ? v.srcObject.getVideoTracks()[0] : null;
 }
 async function startCapacitorScanner(){
-  const Plugins = window.Capacitor && window.Capacitor.Plugins;
-  const BS = Plugins && Plugins.BarcodeScanner;
+  const BS = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.BarcodeScanner;
   if(!BS){ toast('ML Kit сканер не найден','err'); return; }
 
   try{
-    // 1. Запрос разрешения
+    // 1. Разрешение камеры
     const perm = await BS.requestPermissions();
-    const cam = perm && (perm.camera || perm['public.camera']);
+    const cam = perm && perm.camera;
     if(cam && cam !== 'granted' && cam !== 'prompt-with-rationale'){
       toast('Нет доступа к камере','err'); return;
     }
 
-    // 2. Запускаем встроенный ML-Kit сканер (НЕ Google Play Module)
-    //    Это надёжнее и быстрее возвращает результат
-    const listener = await BS.addListener('barcodeScanned', (res) => {
-      const code = res && res.barcode ? (res.barcode.rawValue || res.barcode.displayValue) : null;
-      if(code){
-        listener.remove();
-        BS.stopScanning().catch(()=>{});
-        beep(); if(navigator.vibrate) navigator.vibrate(180);
-        handleDetected(code);
-      }
-    });
-
-    // 3. Параметры сканирования
-    const options = {
-      lensMode: 0,          // 0 = задняя камера
-      scanFormats: [
-        'EAN_13','EAN_8','UPC_A','UPC_E',
-        'CODE_128','CODE_39','CODE_93','ITF','CODABAR',
-        'DATA_MATRIX','QR_CODE','AZTEC','PDF_417'
-      ],
-      googleBarcodeScannerModule: false  // ← ВАЖНО: отключаем Google Play модуль
-    };
-
-    toast('Сканируйте штрихкод…','info');
-    const result = await BS.startScanning(options);
-    // если startScanning вернул результат напрямую
-    if(result && result.barcode){
-      const code = result.barcode.rawValue || result.barcode.displayValue;
-      if(code){
-        await listener.remove();
-        beep(); if(navigator.vibrate) navigator.vibrate(180);
-        handleDetected(code);
-        return;
-      }
-    }
-    // если сканер завершился без кода (пользователь закрыл) — ничего не делаем,
-    // listener ещё работает и поймает следующее событие
-  }catch(e){
-    console.error('Scan error:', e);
-    // Пробуем запасной вариант — простой scan() без Google Play
+    // 2. Модуль Google Barcode Scanner (ставится один раз)
     try{
-      const r2 = await BS.scan({ googleBarcodeScannerModule: false });
-      if(r2 && r2.barcode && !r2.cancelled){
-        const code = r2.barcode.rawValue || r2.barcode.displayValue;
-        if(code){ beep(); if(navigator.vibrate) navigator.vibrate(180); handleDetected(code); return; }
+      const st = await BS.googleBarcodeScannerModuleInstallState();
+      const state = st && st.googleBarcodeScannerModuleInstallState;
+      if(state === 'NOT_INSTALLED' || state === 0){
+        toast('Устанавливаю модуль сканирования…','info');
+        await BS.installGoogleBarcodeScannerModule();
       }
-    }catch(e2){}
-    toast('Ошибка сканера: '+((e&&e.message)||e),'err');
+    }catch(e){}
+
+    // 3. Запуск сканирования — ПРАВИЛЬНЫЙ метод scan()
+    scanningActive = true;
+    const result = await BS.scan();
+
+    // ===== ВРЕМЕННАЯ ОТЛАДКА =====
+    // Пришлите мне текст из этого окна — по нему пойму, что возвращает сканер
+    const dbg =
+      'barcode: ' + JSON.stringify(result && result.barcode) + '\n' +
+      'cancelled: ' + (result && result.cancelled) + '\n' +
+      'ключи результата: ' + (result ? Object.keys(result).join(', ') : 'пусто');
+    alert('ЧТО ВЕРНУЛ СКАНЕР:\n\n' + dbg);
+    // ==============================
+
+    // 4. Достаём код
+    let code = null;
+    if(result && result.barcode){
+      code = result.barcode.rawValue || result.barcode.displayValue;
+    }
+
+    if(code){
+      handleDetected(code);      // откроет карточку формы
+    } else {
+      scanningActive = false;
+      toast('Код не распознан','info');
+    }
+  }catch(e){
+    scanningActive = false;
+    alert('ОШИБКА СКАНЕРА:\n' + ((e && e.message) || JSON.stringify(e)));
   }
 }
 async function openScanner(){
