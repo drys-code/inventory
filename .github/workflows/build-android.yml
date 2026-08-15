@@ -25,13 +25,18 @@ jobs:
           cp inventory.xlsx www/
           cp -r lib/. www/lib/
 
+      - name: Установка ImageMagick
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq imagemagick
+
       - name: Подготовка иконки (квадрат 1024×1024)
         run: |
           mkdir -p assets
-          [ -f icon.png ] && mv -f icon.png assets/icon.png
-          [ -f icon-source.png ] && mv -f icon-source.png assets/icon-source.png
+          if [ -f icon.png ]; then mv -f icon.png assets/icon.png; fi
+          if [ -f icon-source.png ]; then mv -f icon-source.png assets/icon-source.png; fi
           if [ -f assets/icon-source.png ]; then
-            magick assets/icon-source.png -trim +repage -resize 1024x1024 \
+            convert assets/icon-source.png -trim +repage -resize 1024x1024 \
               -gravity center -background "#1e3a8a" -extent 1024x1024 assets/icon.png
           fi
           if [ -f assets/icon.png ]; then
