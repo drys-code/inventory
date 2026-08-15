@@ -1,0 +1,52 @@
+name: Build APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Установка зависимостей
+        run: npm install
+
+      - name: Подготовка www (копируем веб-приложение)
+        run: |
+          mkdir -p www/lib
+          cp index.html www/
+          cp inventory.xlsx www/
+          cp -r lib/. www/lib/
+          [ -f manifest.json ] && cp manifest.json www/ || true
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Добавление Android-платформы
+        run: npx cap add android
+
+      - name: Синхронизация (веб + плагины)
+        run: npx cap sync android
+
+      - name: Сборка APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Публикация APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: inventory-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
